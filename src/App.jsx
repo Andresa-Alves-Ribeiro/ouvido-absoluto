@@ -51,7 +51,7 @@ export default function App() {
   const prevModeRef = useRef(gameMode)
   const classicExerciseIdRef = useRef(1)
   const answerPhaseRef = useRef(0)
-  /** Índice da primeira tecla certa no Ex. 2 (qualquer oitava com a nota grave). */
+  /** Índice da primeira tecla certa no Ex. 2 ou 3 (primeira nota da ordem MA ou MD). */
   const exercise2FirstCorrectIndexRef = useRef(null)
 
   const [playAudioHint, setPlayAudioHint] = useState(false)
@@ -80,8 +80,10 @@ export default function App() {
       return
     }
     const r = exercise2PickRound()
+    const kind =
+      classicExerciseIdRef.current === 2 ? 'twoMa' : 'twoMd'
     roundRef.current = {
-      kind: 'twoMa',
+      kind,
       lowIndex: r.lowIndex,
       highIndex: r.highIndex,
       audioFileLow: r.audioFileLow,
@@ -92,12 +94,16 @@ export default function App() {
   /** Reproduz o áudio da rodada atual (apenas ao clicar no botão). */
   const playRoundAudio = useCallback(async () => {
     const round = roundRef.current
-    if (round.kind === 'twoMa') {
-      let ok = await play(round.audioFileLow, { immediate: true })
-      if (!ok) ok = await play(round.audioFileLow)
+    if (round.kind === 'twoMa' || round.kind === 'twoMd') {
+      const first =
+        round.kind === 'twoMa' ? round.audioFileLow : round.audioFileHigh
+      const second =
+        round.kind === 'twoMa' ? round.audioFileHigh : round.audioFileLow
+      let ok = await play(first, { immediate: true })
+      if (!ok) ok = await play(first)
       await delay(BETWEEN_NOTES_MS)
-      let ok2 = await play(round.audioFileHigh, { immediate: true })
-      if (!ok2) ok2 = await play(round.audioFileHigh)
+      let ok2 = await play(second, { immediate: true })
+      if (!ok2) ok2 = await play(second)
       const allOk = ok && ok2
       if (!allOk) setPlayAudioHint(true)
       else setPlayAudioHint(false)
@@ -150,7 +156,7 @@ export default function App() {
     const round = roundRef.current
     const reveal = {}
 
-    if (round.kind === 'twoMa') {
+    if (round.kind === 'twoMa' || round.kind === 'twoMd') {
       const lowLabel = WHITE_KEYS[round.lowIndex].label
       const highLabel = WHITE_KEYS[round.highIndex].label
       WHITE_KEYS.forEach((k, i) => {
@@ -181,7 +187,7 @@ export default function App() {
   const handleClassicExerciseSelectChange = useCallback(
     (e) => {
       const raw = Number(e.target.value)
-      const id = raw === 2 ? 2 : 1
+      const id = raw === 3 ? 3 : raw === 2 ? 2 : 1
 
       classicExerciseIdRef.current = id
       setClassicExerciseId(id)
@@ -253,13 +259,15 @@ export default function App() {
         return
       }
 
-      /* Exercício 2 — dois cliques na ordem MA (qualquer tecla com a nota certa) */
-      const { lowIndex, highIndex } = round
+      /* Exercícios 2 (MA) e 3 (MD) — dois cliques na ordem do áudio */
+      const { kind, lowIndex, highIndex } = round
       const lowLabel = WHITE_KEYS[lowIndex].label
       const highLabel = WHITE_KEYS[highIndex].label
+      const firstLabel = kind === 'twoMa' ? lowLabel : highLabel
+      const secondLabel = kind === 'twoMa' ? highLabel : lowLabel
 
       if (answerPhaseRef.current === 0) {
-        if (label !== lowLabel) {
+        if (label !== firstLabel) {
           frozenRef.current = true
           handleWrongAnswer()
           return
@@ -273,7 +281,7 @@ export default function App() {
 
       frozenRef.current = true
 
-      if (label !== highLabel) {
+      if (label !== secondLabel) {
         handleWrongAnswer()
         return
       }
@@ -289,6 +297,21 @@ export default function App() {
         const next = s + 1
 
         if (next >= VERIFICATION_TARGET) {
+          if (classicExerciseIdRef.current === 2) {
+            window.setTimeout(() => {
+              classicExerciseIdRef.current = 3
+              setClassicExerciseId(3)
+              setStreak(0)
+              frozenRef.current = false
+              setShowCorrectNotice(false)
+              setWhiteFeedback({})
+              answerPhaseRef.current = 0
+              exercise2FirstCorrectIndexRef.current = null
+              pickNewRound()
+            }, 650)
+            return next
+          }
+
           setExerciseComplete(true)
           window.setTimeout(() => {
             frozenRef.current = false
@@ -325,12 +348,16 @@ export default function App() {
   const instructionsTitle =
     classicExerciseId === 1
       ? 'Exercício 1: Notas C e D - 1 nota'
-      : 'Exercício 2: Notas C e D - 2 notas - MA'
+      : classicExerciseId === 2
+        ? 'Exercício 2: Notas C e D - 2 notas - MA'
+        : 'Exercício 3: Notas C e D - 2 notas - MD'
 
   const replayAriaLabel =
     classicExerciseId === 1
       ? 'Reproduzir o áudio da nota desta rodada'
-      : 'Reproduzir as duas notas desta rodada na ordem grave a agudo'
+      : classicExerciseId === 2
+        ? 'Reproduzir as duas notas desta rodada na ordem grave a agudo'
+        : 'Reproduzir as duas notas desta rodada na ordem agudo a grave'
 
   return (
     <div className="app-screen">
@@ -372,6 +399,7 @@ export default function App() {
             >
               <option value={1}>Exercício 1 — uma nota (C ou D)</option>
               <option value={2}>Exercício 2 — duas notas (MA)</option>
+              <option value={3}>Exercício 3 — duas notas (MD)</option>
             </select>
           </div>
 
@@ -396,7 +424,7 @@ export default function App() {
                 e a tecla fica verde; se errar, as teclas corretas aparecem a
                 vermelho e a série volta a zero.
               </p>
-            ) : (
+            ) : classicExerciseId === 2 ? (
               <p className="app-instructions app-muted">
                 Vai ouvir duas notas seguidas: sempre um dó e um ré em posições
                 diferentes neste teclado. A reprodução segue o{' '}
@@ -408,8 +436,23 @@ export default function App() {
                 nota (qualquer dó conta como dó, qualquer ré como ré), depois
                 qualquer tecla com o nome da segunda nota. Qualquer erro reinicia
                 a série a zero e todas as teclas válidas para cada nota aparecem
-                realçadas; o objetivo são de novo 20 acertos seguidos para
-                concluir o percurso clássico.
+                realçadas; o objetivo são 20 acertos seguidos para passar ao
+                exercício 3.
+              </p>
+            ) : (
+              <p className="app-instructions app-muted">
+                Ouve de novo um dó e um ré em teclas distintas. Desta vez a
+                reprodução segue o{' '}
+                <strong>melódico descendente (MD)</strong>: primeiro soa a nota
+                mais aguda — à direita no teclado, com número de ordem maior — e
+                depois a mais grave — à esquerda, número menor. A sequência pode
+                ser dó–ré ou ré–dó no som; o importante é repetir{' '}
+                <strong>nessa ordem descendente</strong> nos cliques (primeiro o
+                nome da nota que soou primeiro, depois o da segunda). As mesmas
+                regras do exercício 2 aplicam-se: qualquer dó ou ré conta para o
+                nome certo, um erro zera a série e realça todas as teclas válidas
+                para cada nota. Complete 20 acertos seguidos para concluir o
+                percurso clássico.
               </p>
             )
           ) : null}
@@ -422,7 +465,7 @@ export default function App() {
           {exerciseComplete ? (
             <p className="app-success app-muted">
               Percurso clássico concluído — série de verificação completa nos
-              dois exercícios.
+              três exercícios.
             </p>
           ) : null}
 

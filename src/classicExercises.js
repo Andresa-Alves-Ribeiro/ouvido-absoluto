@@ -1,7 +1,8 @@
 /**
  * Exercício 1 — clássico: ouvir C ou D; clicar qualquer C ou D correto.
  * Exercício 2 — dois sons MA (grave → agudo): um C e um D em índices distintos.
- * Áudios em public/assets/audios/ (nomes exatos dos ficheiros).
+ * Exercício 3 — dois sons MD (agudo → grave): mesmos pares C/D que o Ex. 2, ordem invertida.
+ * `exercise2PickRound()` serve aos exercícios 2 e 3. Áudios em public/assets/audios/.
  */
 export const EXERCISE_1_AUDIO_POOL = {
   C: ['b1-C.mp3', 'b8-C.mp3', 'b15-C.mp3'],
