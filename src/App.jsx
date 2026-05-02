@@ -21,6 +21,10 @@ const VERIFICATION_TARGET = 20
 
 const BETWEEN_NOTES_MS = 1000
 
+function rollVerificationHalf(halfRef) {
+  halfRef.current = Math.random() < 0.5 ? 'low' : 'high'
+}
+
 function delay(ms) {
   return new Promise((resolve) => {
     window.setTimeout(resolve, ms)
@@ -36,6 +40,8 @@ export default function App() {
   const [streak, setStreak] = useState(0)
   const [exerciseComplete, setExerciseComplete] = useState(false)
   const [whiteFeedback, setWhiteFeedback] = useState({})
+  /** Índice da branca → passo 1 ou 2 (só erros nos ex. 2 e 3). */
+  const [orderedRevealSteps, setOrderedRevealSteps] = useState(null)
 
   const [showCorrectNotice, setShowCorrectNotice] = useState(false)
 
@@ -53,9 +59,11 @@ export default function App() {
   const answerPhaseRef = useRef(0)
   /** Índice da primeira tecla certa no Ex. 2 ou 3 (primeira nota da ordem MA ou MD). */
   const exercise2FirstCorrectIndexRef = useRef(null)
+  const streakRef = useRef(0)
+  /** Com streak < 10: só índices b1–b7 (`low`) ou b8–b14 (`high`); sorteado ao zerar a série. */
+  const verificationHalfRef = useRef(null)
 
   const [playAudioHint, setPlayAudioHint] = useState(false)
-  const [showClassicExplanation, setShowClassicExplanation] = useState(false)
 
   useLayoutEffect(() => {
     exerciseCompleteRef.current = exerciseComplete
@@ -69,17 +77,29 @@ export default function App() {
     classicExerciseIdRef.current = classicExerciseId
   }, [classicExerciseId])
 
+  useLayoutEffect(() => {
+    streakRef.current = streak
+  }, [streak])
+
   /** Escolhe nota(s) e ficheiro(s); não reproduz som. */
   const pickNewRound = useCallback(() => {
     answerPhaseRef.current = 0
     exercise2FirstCorrectIndexRef.current = null
+    const streakNow = streakRef.current
+    let half = verificationHalfRef.current
+    if (half !== 'low' && half !== 'high') {
+      rollVerificationHalf(verificationHalfRef)
+      half = verificationHalfRef.current
+    }
+    const ctx = { streak: streakNow, half }
+
     if (classicExerciseIdRef.current === 1) {
       const target = exercise1PickTarget()
-      const audioFile = exercise1PickAudioFile(target)
+      const audioFile = exercise1PickAudioFile(target, ctx)
       roundRef.current = { kind: 'one', target, audioFile }
       return
     }
-    const r = exercise2PickRound()
+    const r = exercise2PickRound(ctx)
     const kind =
       classicExerciseIdRef.current === 2 ? 'twoMa' : 'twoMd'
     roundRef.current = {
@@ -124,19 +144,17 @@ export default function App() {
     if (was === 'alternative' && gameMode === 'classic') {
       classicExerciseIdRef.current = 1
       setClassicExerciseId(1)
+      rollVerificationHalf(verificationHalfRef)
       setStreak(0)
       setExerciseComplete(false)
       setWhiteFeedback({})
+      setOrderedRevealSteps(null)
       setShowCorrectNotice(false)
-      setShowClassicExplanation(false)
       frozenRef.current = false
       answerPhaseRef.current = 0
       exercise2FirstCorrectIndexRef.current = null
     }
 
-    if (was === 'classic' && gameMode !== 'classic') {
-      setShowClassicExplanation(false)
-    }
     if (gameMode === 'alternative') {
       frozenRef.current = false
     }
@@ -150,15 +168,24 @@ export default function App() {
   }, [gameMode, exerciseComplete, pickNewRound])
 
   const handleWrongAnswer = useCallback(() => {
+    rollVerificationHalf(verificationHalfRef)
     setStreak(0)
     answerPhaseRef.current = 0
     exercise2FirstCorrectIndexRef.current = null
     const round = roundRef.current
     const reveal = {}
+    let steps = null
 
     if (round.kind === 'twoMa' || round.kind === 'twoMd') {
       const lowLabel = WHITE_KEYS[round.lowIndex].label
       const highLabel = WHITE_KEYS[round.highIndex].label
+      const firstLabel = round.kind === 'twoMa' ? lowLabel : highLabel
+      const secondLabel = round.kind === 'twoMa' ? highLabel : lowLabel
+      const firstIdx = WHITE_KEYS.findIndex((k) => k.label === firstLabel)
+      const secondIdx = WHITE_KEYS.findIndex((k) => k.label === secondLabel)
+      if (firstIdx >= 0 && secondIdx >= 0) {
+        steps = { [firstIdx]: 1, [secondIdx]: 2 }
+      }
       WHITE_KEYS.forEach((k, i) => {
         if (k.label === lowLabel || k.label === highLabel) reveal[i] = 'reveal'
       })
@@ -169,11 +196,13 @@ export default function App() {
       })
     }
 
+    setOrderedRevealSteps(steps)
     setWhiteFeedback(reveal)
 
     window.setTimeout(() => {
       frozenRef.current = false
       setWhiteFeedback({})
+      setOrderedRevealSteps(null)
 
       if (
         !exerciseCompleteRef.current &&
@@ -191,8 +220,10 @@ export default function App() {
 
       classicExerciseIdRef.current = id
       setClassicExerciseId(id)
+      rollVerificationHalf(verificationHalfRef)
       setStreak(0)
       setWhiteFeedback({})
+      setOrderedRevealSteps(null)
       setShowCorrectNotice(false)
       frozenRef.current = false
       answerPhaseRef.current = 0
@@ -232,10 +263,12 @@ export default function App() {
               window.setTimeout(() => {
                 classicExerciseIdRef.current = 2
                 setClassicExerciseId(2)
+                rollVerificationHalf(verificationHalfRef)
                 setStreak(0)
                 frozenRef.current = false
                 setShowCorrectNotice(false)
                 setWhiteFeedback({})
+                setOrderedRevealSteps(null)
                 answerPhaseRef.current = 0
                 exercise2FirstCorrectIndexRef.current = null
                 pickNewRound()
@@ -247,6 +280,7 @@ export default function App() {
               frozenRef.current = false
               setShowCorrectNotice(false)
               setWhiteFeedback({})
+              setOrderedRevealSteps(null)
               if (gameModeRef.current === 'classic') pickNewRound()
             }, 650)
 
@@ -301,10 +335,12 @@ export default function App() {
             window.setTimeout(() => {
               classicExerciseIdRef.current = 3
               setClassicExerciseId(3)
+              rollVerificationHalf(verificationHalfRef)
               setStreak(0)
               frozenRef.current = false
               setShowCorrectNotice(false)
               setWhiteFeedback({})
+              setOrderedRevealSteps(null)
               answerPhaseRef.current = 0
               exercise2FirstCorrectIndexRef.current = null
               pickNewRound()
@@ -317,6 +353,7 @@ export default function App() {
             frozenRef.current = false
             setShowCorrectNotice(false)
             setWhiteFeedback({})
+            setOrderedRevealSteps(null)
           }, 650)
           return next
         }
@@ -325,6 +362,7 @@ export default function App() {
           frozenRef.current = false
           setShowCorrectNotice(false)
           setWhiteFeedback({})
+          setOrderedRevealSteps(null)
           answerPhaseRef.current = 0
           if (gameModeRef.current === 'classic') pickNewRound()
         }, 650)
@@ -358,6 +396,14 @@ export default function App() {
       : classicExerciseId === 2
         ? 'Reproduzir as duas notas desta rodada na ordem grave a agudo'
         : 'Reproduzir as duas notas desta rodada na ordem agudo a grave'
+
+  const orderedRevealHintText =
+    orderedRevealSteps == null
+      ? ''
+      : Object.entries(orderedRevealSteps)
+          .sort((a, b) => a[1] - b[1])
+          .map(([idx, step]) => `${step} — ${WHITE_KEYS[Number(idx)].label}`)
+          .join(', ')
 
   return (
     <div className="app-screen">
@@ -405,58 +451,6 @@ export default function App() {
 
           <p className="app-instructions">{instructionsTitle}</p>
 
-          <button
-            type="button"
-            className="app-explanation-toggle"
-            aria-expanded={showClassicExplanation}
-            onClick={() => setShowClassicExplanation((v) => !v)}
-          >
-            {showClassicExplanation ? 'Ocultar explicação' : 'Ver explicação'}
-          </button>
-
-          {showClassicExplanation ? (
-            classicExerciseId === 1 ? (
-              <p className="app-instructions app-muted">
-                Use o botão «Reproduzir áudio» para ouvir a nota (dó ou ré).
-                Depois clique na tecla branca certa — qualquer dó ou qualquer ré
-                do teclado conta. Complete a série de verificação com 20
-                acertos seguidos sem erros. Ao acertar, surge um toast «Acertou!»
-                e a tecla fica verde; se errar, as teclas corretas aparecem a
-                vermelho e a série volta a zero.
-              </p>
-            ) : classicExerciseId === 2 ? (
-              <p className="app-instructions app-muted">
-                Vai ouvir duas notas seguidas: sempre um dó e um ré em posições
-                diferentes neste teclado. A reprodução segue o{' '}
-                <strong>melódico ascendente (MA)</strong>: primeiro soa a nota
-                mais grave — a da esquerda, com número de ordem menor no
-                teclado — e depois a mais aguda — número maior à direita.
-                Responda <strong>nessa mesma ordem</strong> (grave e depois
-                agudo): primeiro qualquer tecla branca com o nome da primeira
-                nota (qualquer dó conta como dó, qualquer ré como ré), depois
-                qualquer tecla com o nome da segunda nota. Qualquer erro reinicia
-                a série a zero e todas as teclas válidas para cada nota aparecem
-                realçadas; o objetivo são 20 acertos seguidos para passar ao
-                exercício 3.
-              </p>
-            ) : (
-              <p className="app-instructions app-muted">
-                Ouve de novo um dó e um ré em teclas distintas. Desta vez a
-                reprodução segue o{' '}
-                <strong>melódico descendente (MD)</strong>: primeiro soa a nota
-                mais aguda — à direita no teclado, com número de ordem maior — e
-                depois a mais grave — à esquerda, número menor. A sequência pode
-                ser dó–ré ou ré–dó no som; o importante é repetir{' '}
-                <strong>nessa ordem descendente</strong> nos cliques (primeiro o
-                nome da nota que soou primeiro, depois o da segunda). As mesmas
-                regras do exercício 2 aplicam-se: qualquer dó ou ré conta para o
-                nome certo, um erro zera a série e realça todas as teclas válidas
-                para cada nota. Complete 20 acertos seguidos para concluir o
-                percurso clássico.
-              </p>
-            )
-          ) : null}
-
           <span className="app-counter" aria-live="polite">
             Série de verificação: {Math.min(streak, VERIFICATION_TARGET)} /{' '}
             {VERIFICATION_TARGET}
@@ -488,8 +482,19 @@ export default function App() {
             </p>
           ) : null}
 
+          {orderedRevealSteps ? (
+            <p
+              className="app-ordered-reveal-hint"
+              role="status"
+              aria-live="polite"
+            >
+              Ordem correta: {orderedRevealHintText}
+            </p>
+          ) : null}
+
           <PianoKeyboard
             whiteFeedback={whiteFeedback}
+            whiteRevealOrder={orderedRevealSteps ?? {}}
             onWhitePress={handleWhitePress}
             onBlackPress={handleBlackPress}
             disabled={classicDisabled}

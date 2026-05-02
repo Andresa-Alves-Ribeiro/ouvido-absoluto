@@ -1,53 +1,77 @@
 /**
- * Exercício 1 — clássico: ouvir C ou D; clicar qualquer C ou D correto.
- * Exercício 2 — dois sons MA (grave → agudo): um C e um D em índices distintos.
- * Exercício 3 — dois sons MD (agudo → grave): mesmos pares C/D que o Ex. 2, ordem invertida.
- * `exercise2PickRound()` serve aos exercícios 2 e 3. Áudios em public/assets/audios/.
+ * Exercício 1 — clássico: ouvir C ou D; clicar a tecla certa.
+ * Exercícios 2 e 3 — dois sons (MA / MD): C (índice 0) e D (índice 1), ordem conforme o exercício.
+ * Áudios: `b{n}-C.mp3` e `b{n}-D.mp3` com n = 1…14 em public/assets/audios/.
+ * Série de 20: com streak < 10 usa-se só n ∈ [1..7] ou só [8..14] (metade escolhida ao reiniciar a série);
+ * com streak ≥ 10 pode misturar todo o intervalo 1–14.
  */
-export const EXERCISE_1_AUDIO_POOL = {
-  C: ['b1-C.mp3', 'b8-C.mp3', 'b15-C.mp3'],
-  D: ['b2-D.mp3', 'b9-D.mp3'],
+export const EXERCISE_AUDIO_INDICES_LOW = [1, 2, 3, 4, 5, 6, 7]
+export const EXERCISE_AUDIO_INDICES_HIGH = [8, 9, 10, 11, 12, 13, 14]
+
+export const ALL_CLASSIC_EXERCISE_AUDIO_FILES = Array.from(
+  { length: 14 },
+  (_, k) => {
+    const n = k + 1
+    return [`b${n}-C.mp3`, `b${n}-D.mp3`]
+  },
+).flat()
+
+/** Único par possível com uma oitava: dó (0) mais à esquerda, ré (1). */
+export const EXERCISE_2_VALID_PAIRS = [[0, 1]]
+
+function pickFrom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)]
 }
 
-/** Índices das brancas no teclado: um C e um D por par, low < high. */
-export const EXERCISE_2_VALID_PAIRS = [
-  [0, 1],
-  [0, 8],
-  [1, 7],
-  [1, 14],
-  [7, 8],
-  [8, 14],
-]
-
-/** Um ficheiro de áudio por índice de tecla branca usado no modo clássico (C/D). */
-const WHITE_INDEX_TO_EXERCISE_AUDIO = {
-  0: 'b1-C.mp3',
-  1: 'b2-D.mp3',
-  7: 'b8-C.mp3',
-  8: 'b9-D.mp3',
-  14: 'b15-C.mp3',
+function audioFileFor(note, index) {
+  return `b${index}-${note}.mp3`
 }
 
 export function exercise1PickTarget() {
   return Math.random() < 0.5 ? 'C' : 'D'
 }
 
-export function exercise1PickAudioFile(target) {
-  const pool = EXERCISE_1_AUDIO_POOL[target]
-  return pool[Math.floor(Math.random() * pool.length)]
+/**
+ * @param {'C' | 'D'} target
+ * @param {{ streak: number, half: 'low' | 'high' }} opts
+ *   `streak` = acertos já acumulados ao preparar esta rodada (restrito enquanto < 10)
+ */
+export function exercise1PickAudioFile(target, { streak, half }) {
+  const restricted = streak < 10
+  const indices = restricted
+    ? half === 'low'
+      ? EXERCISE_AUDIO_INDICES_LOW
+      : EXERCISE_AUDIO_INDICES_HIGH
+    : [...EXERCISE_AUDIO_INDICES_LOW, ...EXERCISE_AUDIO_INDICES_HIGH]
+  const i = pickFrom(indices)
+  return audioFileFor(target, i)
 }
 
 /**
+ * @param {{ streak: number, half: 'low' | 'high' }} opts
  * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
  */
-export function exercise2PickRound() {
-  const pairs = EXERCISE_2_VALID_PAIRS
-  const [lowIndex, highIndex] =
-    pairs[Math.floor(Math.random() * pairs.length)]
+export function exercise2PickRound({ streak, half }) {
+  const [lowIndex, highIndex] = EXERCISE_2_VALID_PAIRS[0]
+  const restricted = streak < 10
+  if (restricted) {
+    const indices =
+      half === 'low' ? EXERCISE_AUDIO_INDICES_LOW : EXERCISE_AUDIO_INDICES_HIGH
+    const i = pickFrom(indices)
+    return {
+      lowIndex,
+      highIndex,
+      audioFileLow: audioFileFor('C', i),
+      audioFileHigh: audioFileFor('D', i),
+    }
+  }
+  const all = [...EXERCISE_AUDIO_INDICES_LOW, ...EXERCISE_AUDIO_INDICES_HIGH]
+  const iC = pickFrom(all)
+  const iD = pickFrom(all)
   return {
     lowIndex,
     highIndex,
-    audioFileLow: WHITE_INDEX_TO_EXERCISE_AUDIO[lowIndex],
-    audioFileHigh: WHITE_INDEX_TO_EXERCISE_AUDIO[highIndex],
+    audioFileLow: audioFileFor('C', iC),
+    audioFileHigh: audioFileFor('D', iD),
   }
 }
