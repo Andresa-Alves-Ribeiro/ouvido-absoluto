@@ -9,15 +9,20 @@ import {
 import './App.css'
 
 import {
-  exercise1PickAudioFile,
-  exercise1PickTarget,
+  CLASSIC_ONE_NOTE_EX1_LABELS,
+  CLASSIC_ONE_NOTE_EX4_LABELS,
   exercise2PickRound,
+  pickClassicOneNoteRound,
 } from './classicExercises.js'
 import { PianoKeyboard } from './components/PianoKeyboard.jsx'
 import { WHITE_KEYS } from './pianoKeys.js'
 import { useNoteAudio } from './useNoteAudio.js'
 
 const VERIFICATION_TARGET = 20
+
+/** Índices das brancas C e D (ex. 1–3); no ex. 4 inclui-se E (índice 2). */
+const CLASSIC_CD_WHITE_INDICES = new Set([0, 1])
+const CLASSIC_CDE_WHITE_INDICES = new Set([0, 1, 2])
 
 const BETWEEN_NOTES_MS = 1000
 
@@ -52,6 +57,8 @@ export default function App() {
   })
 
   const frozenRef = useRef(false)
+  /** Após erro: revelações ficam até o utilizador carregar «Reproduzir áudio». */
+  const wrongRevealAwaitingReplayRef = useRef(false)
   const exerciseCompleteRef = useRef(false)
   const gameModeRef = useRef(gameMode)
   const prevModeRef = useRef(gameMode)
@@ -60,7 +67,7 @@ export default function App() {
   /** Índice da primeira tecla certa no Ex. 2 ou 3 (primeira nota da ordem MA ou MD). */
   const exercise2FirstCorrectIndexRef = useRef(null)
   const streakRef = useRef(0)
-  /** Com streak < 10: só índices b1–b7 (`low`) ou b8–b14 (`high`); sorteado ao zerar a série. */
+  /** Com streak < 10 no Ex. 1 e 4: só b1–b7 (`low`) ou b8–b14 (`high`); renove-se a cada par de acertos e ao zerar a série. */
   const verificationHalfRef = useRef(null)
 
   const [playAudioHint, setPlayAudioHint] = useState(false)
@@ -86,6 +93,14 @@ export default function App() {
     answerPhaseRef.current = 0
     exercise2FirstCorrectIndexRef.current = null
     const streakNow = streakRef.current
+    if (
+      (classicExerciseIdRef.current === 1 ||
+        classicExerciseIdRef.current === 4) &&
+      streakNow < 10 &&
+      streakNow % 2 === 0
+    ) {
+      rollVerificationHalf(verificationHalfRef)
+    }
     let half = verificationHalfRef.current
     if (half !== 'low' && half !== 'high') {
       rollVerificationHalf(verificationHalfRef)
@@ -94,8 +109,18 @@ export default function App() {
     const ctx = { streak: streakNow, half }
 
     if (classicExerciseIdRef.current === 1) {
-      const target = exercise1PickTarget()
-      const audioFile = exercise1PickAudioFile(target, ctx)
+      const { target, audioFile } = pickClassicOneNoteRound(
+        CLASSIC_ONE_NOTE_EX1_LABELS,
+        ctx,
+      )
+      roundRef.current = { kind: 'one', target, audioFile }
+      return
+    }
+    if (classicExerciseIdRef.current === 4) {
+      const { target, audioFile } = pickClassicOneNoteRound(
+        CLASSIC_ONE_NOTE_EX4_LABELS,
+        ctx,
+      )
       roundRef.current = { kind: 'one', target, audioFile }
       return
     }
@@ -113,6 +138,13 @@ export default function App() {
 
   /** Reproduz o áudio da rodada atual (apenas ao clicar no botão). */
   const playRoundAudio = useCallback(async () => {
+    if (wrongRevealAwaitingReplayRef.current) {
+      wrongRevealAwaitingReplayRef.current = false
+      frozenRef.current = false
+      setWhiteFeedback({})
+      setOrderedRevealSteps(null)
+    }
+
     const round = roundRef.current
     if (round.kind === 'twoMa' || round.kind === 'twoMd') {
       const first =
@@ -151,12 +183,14 @@ export default function App() {
       setOrderedRevealSteps(null)
       setShowCorrectNotice(false)
       frozenRef.current = false
+      wrongRevealAwaitingReplayRef.current = false
       answerPhaseRef.current = 0
       exercise2FirstCorrectIndexRef.current = null
     }
 
     if (gameMode === 'alternative') {
       frozenRef.current = false
+      wrongRevealAwaitingReplayRef.current = false
     }
   }, [gameMode])
 
@@ -196,27 +230,15 @@ export default function App() {
       })
     }
 
+    wrongRevealAwaitingReplayRef.current = true
     setOrderedRevealSteps(steps)
     setWhiteFeedback(reveal)
-
-    window.setTimeout(() => {
-      frozenRef.current = false
-      setWhiteFeedback({})
-      setOrderedRevealSteps(null)
-
-      if (
-        !exerciseCompleteRef.current &&
-        gameModeRef.current === 'classic'
-      ) {
-        pickNewRound()
-      }
-    }, 1600)
-  }, [pickNewRound])
+  }, [])
 
   const handleClassicExerciseSelectChange = useCallback(
     (e) => {
       const raw = Number(e.target.value)
-      const id = raw === 3 ? 3 : raw === 2 ? 2 : 1
+      const id = raw >= 1 && raw <= 4 ? raw : 1
 
       classicExerciseIdRef.current = id
       setClassicExerciseId(id)
@@ -226,6 +248,7 @@ export default function App() {
       setOrderedRevealSteps(null)
       setShowCorrectNotice(false)
       frozenRef.current = false
+      wrongRevealAwaitingReplayRef.current = false
       answerPhaseRef.current = 0
       exercise2FirstCorrectIndexRef.current = null
 
@@ -272,6 +295,20 @@ export default function App() {
                 answerPhaseRef.current = 0
                 exercise2FirstCorrectIndexRef.current = null
                 pickNewRound()
+              }, 650)
+              return next
+            }
+
+            if (
+              next >= VERIFICATION_TARGET &&
+              classicExerciseIdRef.current === 4
+            ) {
+              setExerciseComplete(true)
+              window.setTimeout(() => {
+                frozenRef.current = false
+                setShowCorrectNotice(false)
+                setWhiteFeedback({})
+                setOrderedRevealSteps(null)
               }, 650)
               return next
             }
@@ -348,13 +385,23 @@ export default function App() {
             return next
           }
 
-          setExerciseComplete(true)
-          window.setTimeout(() => {
-            frozenRef.current = false
-            setShowCorrectNotice(false)
-            setWhiteFeedback({})
-            setOrderedRevealSteps(null)
-          }, 650)
+          if (classicExerciseIdRef.current === 3) {
+            window.setTimeout(() => {
+              classicExerciseIdRef.current = 4
+              setClassicExerciseId(4)
+              rollVerificationHalf(verificationHalfRef)
+              setStreak(0)
+              frozenRef.current = false
+              setShowCorrectNotice(false)
+              setWhiteFeedback({})
+              setOrderedRevealSteps(null)
+              answerPhaseRef.current = 0
+              exercise2FirstCorrectIndexRef.current = null
+              pickNewRound()
+            }, 650)
+            return next
+          }
+
           return next
         }
 
@@ -387,11 +434,13 @@ export default function App() {
     classicExerciseId === 1
       ? 'Exercício 1: Notas C e D - 1 nota'
       : classicExerciseId === 2
-        ? 'Exercício 2: Notas C e D - 2 notas - MA'
-        : 'Exercício 3: Notas C e D - 2 notas - MD'
+        ? 'Exercício 2: Notas C e D - 2 notas — MA'
+        : classicExerciseId === 3
+          ? 'Exercício 3: Notas C e D - 2 notas — MD'
+          : 'Exercício 4: Notas C, D e E - 1 nota'
 
   const replayAriaLabel =
-    classicExerciseId === 1
+    classicExerciseId === 1 || classicExerciseId === 4
       ? 'Reproduzir o áudio da nota desta rodada'
       : classicExerciseId === 2
         ? 'Reproduzir as duas notas desta rodada na ordem grave a agudo'
@@ -446,6 +495,7 @@ export default function App() {
               <option value={1}>Exercício 1 — uma nota (C ou D)</option>
               <option value={2}>Exercício 2 — duas notas (MA)</option>
               <option value={3}>Exercício 3 — duas notas (MD)</option>
+              <option value={4}>Exercício 4 — uma nota (C, D ou E)</option>
             </select>
           </div>
 
@@ -459,7 +509,7 @@ export default function App() {
           {exerciseComplete ? (
             <p className="app-success app-muted">
               Percurso clássico concluído — série de verificação completa nos
-              três exercícios.
+              quatro exercícios.
             </p>
           ) : null}
 
@@ -498,6 +548,12 @@ export default function App() {
             onWhitePress={handleWhitePress}
             onBlackPress={handleBlackPress}
             disabled={classicDisabled}
+            allowedWhiteIndices={
+              classicExerciseId === 4
+                ? CLASSIC_CDE_WHITE_INDICES
+                : CLASSIC_CD_WHITE_INDICES
+            }
+            disableBlackKeys
           />
 
           {showCorrectNotice ? (

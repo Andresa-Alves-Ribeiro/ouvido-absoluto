@@ -11,6 +11,8 @@ function stopEvent(e) {
  * @param {(index: number, label: string) => void} [onWhitePress]
  * @param {() => void} [onBlackPress]
  * @param {boolean} [disabled]
+ * @param {ReadonlySet<number> | null} [allowedWhiteIndices] Se definido, só esses índices de branca são clicáveis
+ * @param {boolean} [disableBlackKeys]
  */
 export function PianoKeyboard({
   whiteFeedback = {},
@@ -18,8 +20,13 @@ export function PianoKeyboard({
   onWhitePress,
   onBlackPress,
   disabled = false,
+  allowedWhiteIndices = null,
+  disableBlackKeys = false,
 }) {
   const n = WHITE_COUNT
+
+  const whiteClickable = (i) =>
+    allowedWhiteIndices == null || allowedWhiteIndices.has(i)
 
   return (
     <div className="piano-board" aria-label="Teclado base clicável">
@@ -37,16 +44,18 @@ export function PianoKeyboard({
                 ? `Nota ${k.label}, ${orderStep}.ª da sequência correta, uma oitava (dó–si)`
                 : `Nota ${k.label}, uma oitava (dó–si)`
 
+            const keyDisabled = disabled || !whiteClickable(i)
+
             return (
               <button
                 key={`w-${i}-${k.audioFile}`}
                 type="button"
                 className={cls.join(' ')}
                 aria-label={ariaNote}
-                disabled={disabled}
+                disabled={keyDisabled}
                 onPointerDown={(e) => {
                   stopEvent(e)
-                  if (disabled) return
+                  if (keyDisabled) return
                   onWhitePress?.(i, k.label)
                 }}
               >
@@ -64,6 +73,7 @@ export function PianoKeyboard({
               /* Centro na junção entre duas brancas; ~47% da largura de cada branca (≈ proporcao real ~11∶23 mm). */
               const leftPct = ((k.afterWhite + 1) / n) * 100
               const widthPct = (100 / n) * 0.47
+              const blackDisabled = disabled || disableBlackKeys
               return (
                 <button
                   key={`b-${i}-${k.afterWhite}`}
@@ -75,10 +85,10 @@ export function PianoKeyboard({
                     transform: 'translateX(-50%)',
                   }}
                   aria-label={`${k.sharp} ou ${k.flat}`}
-                  disabled={disabled}
+                  disabled={blackDisabled}
                   onPointerDown={(e) => {
                     stopEvent(e)
-                    if (disabled) return
+                    if (blackDisabled) return
                     onBlackPress?.()
                   }}
                 >
