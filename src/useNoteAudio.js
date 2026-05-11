@@ -63,5 +63,12 @@ export function useNoteAudio() {
     return waitUntilPlayable(audio).then(runPlay)
   }, [])
 
-  return playFile
+  const pauseAll = useCallback(() => {
+    for (const audio of cache.current.values()) {
+      audio.pause()
+      audio.currentTime = 0
+    }
+  }, [])
+
+  return { playFile, pauseAll }
 }

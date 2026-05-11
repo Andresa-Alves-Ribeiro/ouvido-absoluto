@@ -1,17 +1,3 @@
-/**
- * Exercício 1 — clássico: ouvir C ou D; clicar a tecla certa.
- * Exercício 4 — mesma regra que o 1, com C, D ou E.
- * Exercícios 2 e 3 — dois sons (MA / MD): C (índice 0) e D (índice 1), ordem conforme o exercício.
- *
- * Nomenclatura dos ficheiros: n = 1…7 → primeira oitava; n = 8…14 → segunda oitava.
- *
- * Ficheiros reais: `b{n}-{Nota}.mp3` com n = 1…14; a nota segue duas oitavas de escala maior
- * (C D E F G A B repetido). Não existe `b{n}-C.mp3` e `b{n}-D.mp3` para o mesmo n.
- *
- * Série de 20: com streak < 10 usa-se só n ∈ [1..7] ou só [8..14]; no Exercício 1 a metade (grave/agudo) é
- * sorteada em `pickNewRound` (App.jsx) no início de cada par de acertos (e ao reiniciar após erro), não uma vez por série longa.
- * Com streak ≥ 10 pode misturar todo o intervalo 1–14 (no Ex. 1 e 4 usam-se os índices onde a nota é a alvo).
- */
 export const EXERCISE_AUDIO_INDICES_LOW = [1, 2, 3, 4, 5, 6, 7]
 export const EXERCISE_AUDIO_INDICES_HIGH = [8, 9, 10, 11, 12, 13, 14]
 
@@ -55,11 +41,473 @@ export const ALL_CLASSIC_EXERCISE_AUDIO_FILES = EXERCISE_AUDIO_INDICES_LOW.map(
   (n) => audioFileForIndex(n),
 ).concat(EXERCISE_AUDIO_INDICES_HIGH.map((n) => audioFileForIndex(n)))
 
-/** Único par possível com uma oitava: dó (0) mais à esquerda, ré (1). */
-export const EXERCISE_2_VALID_PAIRS = [[0, 1]]
+/** Ex. 5 — pares em ordem MA no teclado: C–D, C–E, D–E (índices das brancas C=0, D=1, E=2). */
+export const EXERCISE_5_VALID_PAIRS = [
+  [0, 1],
+  [0, 2],
+  [1, 2],
+]
+
+/** Ex. 9 — mesma lógica com F: C–D, C–E, C–F, D–E, D–F, E–F (C=0…F=3). */
+export const EXERCISE_9_VALID_PAIRS = [
+  [0, 1],
+  [0, 2],
+  [0, 3],
+  [1, 2],
+  [1, 3],
+  [2, 3],
+]
+
+/** Ex. 13 — mesma lógica com G: todos os pares entre C e G (C=0…G=4). */
+export const EXERCISE_13_VALID_PAIRS = [
+  [0, 1],
+  [0, 2],
+  [0, 3],
+  [0, 4],
+  [1, 2],
+  [1, 3],
+  [1, 4],
+  [2, 3],
+  [2, 4],
+  [3, 4],
+]
+
+/** Ex. 17 (MA) / Ex. 18–19 — mesma lógica com A: todos os pares entre C e A (C=0…A=5 nas brancas da escala maior). */
+export const EXERCISE_18_VALID_PAIRS = [
+  [0, 1],
+  [0, 2],
+  [0, 3],
+  [0, 4],
+  [0, 5],
+  [1, 2],
+  [1, 3],
+  [1, 4],
+  [1, 5],
+  [2, 3],
+  [2, 4],
+  [2, 5],
+  [3, 4],
+  [3, 5],
+  [4, 5],
+]
+
+/** Ex. 21 (MA) / Ex. 22–23 / Ex. 25 (branco–branco) — mesma lógica com B: todos os pares entre C e B (C=0…B=6). */
+export const EXERCISE_22_VALID_PAIRS = [
+  [0, 1],
+  [0, 2],
+  [0, 3],
+  [0, 4],
+  [0, 5],
+  [0, 6],
+  [1, 2],
+  [1, 3],
+  [1, 4],
+  [1, 5],
+  [1, 6],
+  [2, 3],
+  [2, 4],
+  [2, 5],
+  [2, 6],
+  [3, 4],
+  [3, 5],
+  [3, 6],
+  [4, 5],
+  [4, 6],
+  [5, 6],
+]
+
+/** Especificação de uma rodada do Ex. 25 (MA): branco–branco ou branco–G# segundo a altura real. */
+const EXERCISE_25_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat(
+    [0, 1, 2, 3, 4].map((w) => ({
+      type: 'wg',
+      w,
+    })),
+  )
+  .concat(
+    [5, 6].map((w) => ({
+      type: 'gw',
+      w,
+    })),
+  )
+
+/** Ex. 29 (MA): branco–branco ou branco–F# / F#–branco (F# entre F e G nas brancas). */
+const EXERCISE_29_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat(
+    [0, 1, 2, 3].map((w) => ({
+      type: 'wf',
+      w,
+    })),
+  )
+  .concat(
+    [4, 5, 6].map((w) => ({
+      type: 'fw',
+      w,
+    })),
+  )
+
+/** Ex. 33 (MA): branco–branco ou branco–D# / D#–branco (D# entre D e E nas brancas). */
+const EXERCISE_33_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat(
+    [0, 1].map((w) => ({
+      type: 'wd',
+      w,
+    })),
+  )
+  .concat(
+    [2, 3, 4, 5, 6].map((w) => ({
+      type: 'dw',
+      w,
+    })),
+  )
+
+/** Ex. 37 (MA): branco–branco ou branco–C# / C#–branco com todas as brancas. */
+const EXERCISE_37_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat(
+    [0].map((w) => ({
+      type: 'wc',
+      w,
+    })),
+  )
+  .concat(
+    [1, 2, 3, 4, 5, 6].map((w) => ({
+      type: 'cw',
+      w,
+    })),
+  )
+
+/** Ex. 41 (MA): branco–branco ou branco–A# / A#–branco com todas as brancas. */
+const EXERCISE_41_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat(
+    [0, 1, 2, 3, 4, 5].map((w) => ({
+      type: 'wa',
+      w,
+    })),
+  )
+  .concat(
+    [6].map((w) => ({
+      type: 'aw',
+      w,
+    })),
+  )
+
+/** @param {number} whiteIdx índice da branca 0…6; @param {number} streak */
+function exercise25WhiteAudioIndexForLowNote(whiteIdx, streak) {
+  const restricted = streak < 10
+  if (restricted) {
+    const usePrimeiraOitava = streak % 2 === 0
+    return usePrimeiraOitava ? 1 + whiteIdx : 8 + whiteIdx
+  }
+  const everyRound = streak % 2
+  const everyTwoRounds = Math.floor(streak / 2) % 2
+  const baseCross = everyRound ^ everyTwoRounds
+  return baseCross === 0 ? 1 + whiteIdx : 8 + whiteIdx
+}
+
+/** @param {number} whiteIdx @param {number} streak */
+function exercise25WhiteAudioIndexForHighNote(whiteIdx, streak) {
+  const restricted = streak < 10
+  if (restricted) {
+    const usePrimeiraOitava = streak % 2 === 0
+    return usePrimeiraOitava ? 1 + whiteIdx : 8 + whiteIdx
+  }
+  const everyRound = streak % 2
+  const everyTwoRounds = Math.floor(streak / 2) % 2
+  const baseCross = everyRound ^ everyTwoRounds
+  return baseCross === 0 ? 8 + whiteIdx : 1 + whiteIdx
+}
+
+/**
+ * Ex. 25 — mesmas regras de oitava que o Ex. 21 nos bi-ficheiros das brancas; pares = Ex. 21 ∪ {branca,G#/Ab}.
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ audioFileLow: string, audioFileHigh: string, slot0: {kind:'white',index:number}|{kind:'gsharp'}, slot1: {kind:'white',index:number}|{kind:'gsharp'} }}
+ */
+export function exercise25PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_25_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const gsharpFile = CLASSIC_ONE_NOTE_EX24_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wg') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: gsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'gsharp' },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+  return {
+    audioFileLow: gsharpFile,
+    audioFileHigh: audioFileForIndex(iWhite),
+    slot0: { kind: 'gsharp' },
+    slot1: { kind: 'white', index: w },
+  }
+}
+
+/**
+ * Ex. 29 — mesmas regras de oitava nos bi-ficheiros das brancas que o Ex. 21; pares = Ex. 21 ∪ {branca,F#/Gb}.
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ audioFileLow: string, audioFileHigh: string, slot0: {kind:'white',index:number}|{kind:'fsharp'}, slot1: {kind:'white',index:number}|{kind:'fsharp'} }}
+ */
+export function exercise29PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_29_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const fsharpFile = CLASSIC_ONE_NOTE_EX28_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wf') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: fsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'fsharp' },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+  return {
+    audioFileLow: fsharpFile,
+    audioFileHigh: audioFileForIndex(iWhite),
+    slot0: { kind: 'fsharp' },
+    slot1: { kind: 'white', index: w },
+  }
+}
+
+/**
+ * Ex. 33 (MA), Ex. 34 (MD em App.jsx com `twoMd`) e Ex. 35 (H em App.jsx com `twoH`) — mesmas regras de oitava nas brancas que o Ex. 21; pares = Ex. 21 ∪ {branca,D#/Eb}.
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ audioFileLow: string, audioFileHigh: string, slot0: {kind:'white',index:number}|{kind:'dsharp'}, slot1: {kind:'white',index:number}|{kind:'dsharp'} }}
+ */
+export function exercise33PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_33_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const dsharpFile = CLASSIC_ONE_NOTE_EX32_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wd') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: dsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'dsharp' },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+  return {
+    audioFileLow: dsharpFile,
+    audioFileHigh: audioFileForIndex(iWhite),
+    slot0: { kind: 'dsharp' },
+    slot1: { kind: 'white', index: w },
+  }
+}
+
+/**
+ * Ex. 35 — harmónico (H): mesmos pares e oitavas que o Ex. 33 (`exercise33PickRound`); os dois sons em simultâneo; ordem dos cliques livre (como o Ex. 23).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ audioFileLow: string, audioFileHigh: string, slot0: {kind:'white',index:number}|{kind:'dsharp'}, slot1: {kind:'white',index:number}|{kind:'dsharp'} }}
+ */
+export function exercise35PickRound(opts) {
+  return exercise33PickRound(opts)
+}
+
+/**
+ * Ex. 37 (MA), Ex. 38 (MD em App.jsx com `twoMd`) e Ex. 39 (H em App.jsx com `twoH`) — mesmas regras de oitava nas brancas que o Ex. 21; pares = Ex. 21 ∪ {branca,C#/Db}.
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ audioFileLow: string, audioFileHigh: string, slot0: {kind:'white',index:number}|{kind:'csharp'}, slot1: {kind:'white',index:number}|{kind:'csharp'} }}
+ */
+export function exercise37PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_37_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const csharpFile = CLASSIC_ONE_NOTE_EX36_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wc') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: csharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'csharp' },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+  return {
+    audioFileLow: csharpFile,
+    audioFileHigh: audioFileForIndex(iWhite),
+    slot0: { kind: 'csharp' },
+    slot1: { kind: 'white', index: w },
+  }
+}
+
+/**
+ * Ex. 39 — harmónico (H): mesmos pares e oitavas que o Ex. 37 (`exercise37PickRound`); os dois sons em simultâneo; ordem dos cliques livre (como o Ex. 23).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ audioFileLow: string, audioFileHigh: string, slot0: {kind:'white',index:number}|{kind:'csharp'}, slot1: {kind:'white',index:number}|{kind:'csharp'} }}
+ */
+export function exercise39PickRound(opts) {
+  return exercise37PickRound(opts)
+}
+
+/**
+ * Ex. 41 (MA) — mesmas regras de oitava nas brancas que o Ex. 21; pares = Ex. 21 ∪ {branca,Lá#/Si♭} conforme altura (`p5-Asharp-Bb.mp3`; A# entre A e B: só A com A# agudo; A# grave com B).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ audioFileLow: string, audioFileHigh: string, slot0: {kind:'white',index:number}|{kind:'asharp'}, slot1: {kind:'white',index:number}|{kind:'asharp'} }}
+ */
+export function exercise41PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_41_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const asharpFile = CLASSIC_ONE_NOTE_EX40_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wa') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: asharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'asharp' },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+  return {
+    audioFileLow: asharpFile,
+    audioFileHigh: audioFileForIndex(iWhite),
+    slot0: { kind: 'asharp' },
+    slot1: { kind: 'white', index: w },
+  }
+}
+
+
+/**
+ * Ex. 43 (H) — mesmos pares e oitavas que o Ex. 41 (`exercise41PickRound`); os dois sons em simultâneo; ordem dos cliques livre (como o Ex. 23).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ audioFileLow: string, audioFileHigh: string, slot0: {kind:'white',index:number}|{kind:'asharp'}, slot1: {kind:'white',index:number}|{kind:'asharp'} }}
+ */
+export function exercise43PickRound(opts) {
+  return exercise41PickRound(opts)
+}
 
 function pickFrom(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
+}
+
+const VERIFICATION_SERIES_LENGTH = 20
+const TARGET_VERIFICATION_SLOTS = [0, 3, 6, 9, 12, 15, 18]
+
+function verificationStreakIndex(streak) {
+  return ((streak % VERIFICATION_SERIES_LENGTH) + VERIFICATION_SERIES_LENGTH) %
+    VERIFICATION_SERIES_LENGTH
+}
+
+function targetVerificationSlotIndex(streak) {
+  return TARGET_VERIFICATION_SLOTS.indexOf(verificationStreakIndex(streak))
+}
+
+function pickByVerificationTarget(items, isTargetItem, streak) {
+  const targetSlot = targetVerificationSlotIndex(streak)
+  const targetItems = items.filter(isTargetItem)
+  const otherItems = items.filter((item) => !isTargetItem(item))
+  if (targetSlot >= 0 && targetItems.length > 0) {
+    return targetItems[targetSlot % targetItems.length]
+  }
+  if (otherItems.length > 0) return pickFrom(otherItems)
+  return pickFrom(items)
 }
 
 function poolIndices(streak, half) {
@@ -70,68 +518,394 @@ function poolIndices(streak, half) {
   return half === 'low' ? EXERCISE_AUDIO_INDICES_LOW : EXERCISE_AUDIO_INDICES_HIGH
 }
 
-/** Notas permitidas nos exercícios de uma só nota (áudio `b{n}-Nota.mp3`). */
-export const CLASSIC_ONE_NOTE_EX1_LABELS = ['C', 'D']
-export const CLASSIC_ONE_NOTE_EX4_LABELS = ['C', 'D', 'E']
-
-/**
- * Uma rodada = um ficheiro de áudio; o alvo é a nota desse ficheiro (nunca escolhas independentes).
- *
- * @param {readonly ('C' | 'D' | 'E')[]} allowedNoteLabels
- * @param {{ streak: number, half: 'low' | 'high' }} opts
- * @returns {{ target: string, audioFile: string }}
- */
-export function pickClassicOneNoteRound(allowedNoteLabels, { streak, half }) {
-  const allowed = new Set(allowedNoteLabels)
+function whiteChoicesForOneNoteRound(whiteLabels, { streak, half }) {
   const pool = poolIndices(streak, half)
-  let candidates = pool.filter((i) => allowed.has(NOTE_BY_INDEX[i]))
-  if (candidates.length === 0) {
+  let whiteCandidates = pool.filter((i) => whiteLabels.includes(NOTE_BY_INDEX[i]))
+  if (whiteCandidates.length === 0) {
     const full = [
       ...EXERCISE_AUDIO_INDICES_LOW,
       ...EXERCISE_AUDIO_INDICES_HIGH,
     ]
-    candidates = full.filter((i) => allowed.has(NOTE_BY_INDEX[i]))
+    whiteCandidates = full.filter((i) => whiteLabels.includes(NOTE_BY_INDEX[i]))
   }
-  const i = pickFrom(candidates)
-  const audioFile = audioFileForIndex(i)
-  const target = classicAudioFileNoteLabel(audioFile) || NOTE_BY_INDEX[i]
-  return { target, audioFile }
+  return whiteCandidates.map((i) => ({
+    target: NOTE_BY_INDEX[i],
+    audioFile: audioFileForIndex(i),
+  }))
+}
+
+function pickOneNoteChoiceByTarget(choices, targetNote, streak) {
+  return pickByVerificationTarget(
+    choices,
+    (choice) => choice.target === targetNote,
+    streak,
+  )
+}
+
+/** Notas permitidas nos exercícios de uma só nota (áudio `b{n}-Nota.mp3`). */
+export const CLASSIC_ONE_NOTE_EX1_LABELS = ['C', 'D']
+export const CLASSIC_ONE_NOTE_EX4_LABELS = ['C', 'D', 'E']
+export const CLASSIC_ONE_NOTE_EX8_LABELS = ['C', 'D', 'E', 'F']
+export const CLASSIC_ONE_NOTE_EX12_LABELS = ['C', 'D', 'E', 'F', 'G']
+
+/** Ex. 16 — uma nota; mesmo critério de oitavas que o Ex. 12; notas do Ex. 13 com A acrescentado. */
+export const CLASSIC_ONE_NOTE_EX17_LABELS = ['C', 'D', 'E', 'F', 'G', 'A']
+
+/** Ex. 20 — uma nota; mesmo critério que o Ex. 16; notas do Ex. 16 com B acrescentado. */
+export const CLASSIC_ONE_NOTE_EX21_LABELS = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+
+/** Ex. 42 (novo) — acorde diminuto 1: só D, F, G#/Ab, B; uma nota por rodada. */
+export const CLASSIC_ONE_NOTE_DIMINISHED1_WHITE_LABELS = ['D', 'F', 'B']
+
+/** Ex. 24 — G#/Ab; alvo interno sempre «G#»; o mesmo som que a tecla preta G#/Ab. */
+export const CLASSIC_ONE_NOTE_EX24_BLACK = {
+  target: 'G#',
+  audioFile: 'p4-Gsharp-Ab.mp3',
+}
+
+/** Ex. 28 — F#/Gb; alvo interno sempre «F#»; o mesmo som que a tecla preta F#/Gb. */
+export const CLASSIC_ONE_NOTE_EX28_BLACK = {
+  target: 'F#',
+  audioFile: 'p3-Fsharp-Gb.mp3',
+}
+
+/** Ex. 32 — D#/Eb; alvo interno sempre «D#»; o mesmo som que a tecla preta D#/Eb. */
+export const CLASSIC_ONE_NOTE_EX32_BLACK = {
+  target: 'D#',
+  audioFile: 'p2-Dsharp-Eb.mp3',
+}
+
+/** Ex. 36 — C#/Db; alvo interno sempre «C#»; o mesmo som que a tecla preta C#/Db. */
+export const CLASSIC_ONE_NOTE_EX36_BLACK = {
+  target: 'C#',
+  audioFile: 'p1-Csharp-Db.mp3',
+}
+
+/** Ex. 40 — A#/Bb; alvo interno sempre «A#»; o mesmo som que a tecla preta A#/Bb. */
+export const CLASSIC_ONE_NOTE_EX40_BLACK = {
+  target: 'A#',
+  audioFile: 'p5-Asharp-Bb.mp3',
 }
 
 /**
- * Ex. 2 — escolha dos MP3 (C = audioFileLow, D = audioFileHigh no MA):
- * - streak &lt; 10: alterna a cada rodada (cada rodada = duas notas ouvidas) entre par só na
- *   primeira oitava (1,2) e par só na segunda (8,9).
- * - streak ≥ 10: sempre uma nota em cada oitava; alterna (1,9) ↔ (8,2) a cada rodada (cada nota
- *   muda de registo) e a cada duas rodadas reforça o ciclo com `floor(streak/2) % 2`.
+ * Uma rodada = um ficheiro de áudio; o alvo é a nota desse ficheiro (nunca escolhas independentes).
  *
- * @param {{ streak: number, half?: 'low' | 'high' }} opts
- *   O objeto pode incluir `half` (como no Ex. 1); neste exercício só `streak` é usado.
+ * @param {readonly string[]} allowedNoteLabels — p. ex. Ex. 1 (C,D), Ex. 4 (+E), Ex. 8 (+F), Ex. 12 (+G), Ex. 16 (+A), Ex. 20 (+B); nos Ex. 24, 28, 32, 36 e 40 usa-se um picker específico com preta extra.
+ * @param {{ streak: number, half: 'low' | 'high' }} opts
+ * @returns {{ target: string, audioFile: string }}
+ */
+export function pickClassicOneNoteRound(allowedNoteLabels, { streak, half }) {
+  const choices = whiteChoicesForOneNoteRound(allowedNoteLabels, { streak, half })
+  const targetNote = allowedNoteLabels[allowedNoteLabels.length - 1]
+  const picked = pickOneNoteChoiceByTarget(choices, targetNote, streak)
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+/**
+ * Ex. 24 — uma nota: mesmas brancas que o Ex. 20 + G#/Ab (uma opção extra no sorteio por rodada).
+ *
+ * @param {{ streak: number, half: 'low' | 'high' }} opts
+ * @returns {{ target: string, audioFile: string }}
+ */
+export function pickClassicOneNoteRoundEx24({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX21_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices.concat([CLASSIC_ONE_NOTE_EX24_BLACK])
+  const picked = pickOneNoteChoiceByTarget(
+    allChoices,
+    CLASSIC_ONE_NOTE_EX24_BLACK.target,
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+/**
+ * Ex. 28 — uma nota: mesmas brancas que o Ex. 20 + F#/Gb (uma opção extra no sorteio por rodada).
+ *
+ * @param {{ streak: number, half: 'low' | 'high' }} opts
+ * @returns {{ target: string, audioFile: string }}
+ */
+export function pickClassicOneNoteRoundEx28({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX21_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices.concat([CLASSIC_ONE_NOTE_EX28_BLACK])
+  const picked = pickOneNoteChoiceByTarget(
+    allChoices,
+    CLASSIC_ONE_NOTE_EX28_BLACK.target,
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+/**
+ * Ex. 32 — uma nota: mesmas brancas que o Ex. 20 + D#/Eb (uma opção extra no sorteio por rodada).
+ *
+ * @param {{ streak: number, half: 'low' | 'high' }} opts
+ * @returns {{ target: string, audioFile: string }}
+ */
+export function pickClassicOneNoteRoundEx32({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX21_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices.concat([CLASSIC_ONE_NOTE_EX32_BLACK])
+  const picked = pickOneNoteChoiceByTarget(
+    allChoices,
+    CLASSIC_ONE_NOTE_EX32_BLACK.target,
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+/**
+ * Ex. 36 — uma nota: mesmas brancas que o Ex. 20 + C#/Db (uma opção extra no sorteio por rodada).
+ *
+ * @param {{ streak: number, half: 'low' | 'high' }} opts
+ * @returns {{ target: string, audioFile: string }}
+ */
+export function pickClassicOneNoteRoundEx36({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX21_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices.concat([CLASSIC_ONE_NOTE_EX36_BLACK])
+  const picked = pickOneNoteChoiceByTarget(
+    allChoices,
+    CLASSIC_ONE_NOTE_EX36_BLACK.target,
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+/**
+ * Ex. 40 — uma nota: mesmas brancas que o Ex. 20 + A#/Bb (uma opção extra no sorteio por rodada).
+ *
+ * @param {{ streak: number, half: 'low' | 'high' }} opts
+ * @returns {{ target: string, audioFile: string }}
+ */
+export function pickClassicOneNoteRoundEx40({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX21_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices.concat([CLASSIC_ONE_NOTE_EX40_BLACK])
+  const picked = pickOneNoteChoiceByTarget(
+    allChoices,
+    CLASSIC_ONE_NOTE_EX40_BLACK.target,
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+/**
+ * Ex. 5 — streak &lt; 10: alterna oitava inteira a cada rodada; streak ≥ 10: notas em oitavas cruzadas;
+ * par aleatório em {C–D, C–E, D–E}; MA = primeiro o mais grave, depois o mais agudo.
+ *
+ * @param {{ streak: number }} opts
  * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
  */
-export function exercise2PickRound({ streak }) {
-  const [lowIndex, highIndex] = EXERCISE_2_VALID_PAIRS[0]
+export function exercise5PickRound({ streak }) {
+  const pair = pickByVerificationTarget(
+    EXERCISE_5_VALID_PAIRS,
+    ([lowIndex, highIndex]) => lowIndex === 2 || highIndex === 2,
+    streak,
+  )
+  const [lowIndex, highIndex] = pair
   const restricted = streak < 10
   if (restricted) {
     const usePrimeiraOitava = streak % 2 === 0
-    const indexC = usePrimeiraOitava ? 1 : 8
-    const indexD = usePrimeiraOitava ? 2 : 9
+    const iLow = usePrimeiraOitava ? 1 + lowIndex : 8 + lowIndex
+    const iHigh = usePrimeiraOitava ? 1 + highIndex : 8 + highIndex
     return {
       lowIndex,
       highIndex,
-      audioFileLow: audioFileForIndex(indexC),
-      audioFileHigh: audioFileForIndex(indexD),
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
     }
   }
   const everyRound = streak % 2
   const everyTwoRounds = Math.floor(streak / 2) % 2
   const baseCross = everyRound ^ everyTwoRounds
-  const iC = baseCross === 0 ? 1 : 8
-  const iD = baseCross === 0 ? 9 : 2
+  const iLow = baseCross === 0 ? 1 + lowIndex : 8 + lowIndex
+  const iHigh = baseCross === 0 ? 8 + highIndex : 1 + highIndex
   return {
     lowIndex,
     highIndex,
-    audioFileLow: audioFileForIndex(iC),
-    audioFileHigh: audioFileForIndex(iD),
+    audioFileLow: audioFileForIndex(iLow),
+    audioFileHigh: audioFileForIndex(iHigh),
   }
+}
+
+/**
+ * @param {{ streak: number, half: 'low' | 'high' }} opts
+ * @returns {{ target: string, audioFile: string }}
+ */
+export function exercise42PickRound({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_DIMINISHED1_WHITE_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices.concat([CLASSIC_ONE_NOTE_EX24_BLACK])
+  const focusTargets = ['D', 'F', 'G#', 'B']
+  const targetNote = focusTargets[streak % focusTargets.length]
+  const picked = pickOneNoteChoiceByTarget(allChoices, targetNote, streak)
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+/** Lógica de oitava partilhada pelos exercícios MA de brancas (grave → agudo). */
+function pickTwoMaRoundFromPairs(validPairs, targetIndex, { streak }) {
+  const pair = pickByVerificationTarget(
+    validPairs,
+    ([lowIndex, highIndex]) =>
+      lowIndex === targetIndex || highIndex === targetIndex,
+    streak,
+  )
+  const [lowIndex, highIndex] = pair
+  const restricted = streak < 10
+  if (restricted) {
+    const usePrimeiraOitava = streak % 2 === 0
+    const iLow = usePrimeiraOitava ? 1 + lowIndex : 8 + lowIndex
+    const iHigh = usePrimeiraOitava ? 1 + highIndex : 8 + highIndex
+    return {
+      lowIndex,
+      highIndex,
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+    }
+  }
+  const everyRound = streak % 2
+  const everyTwoRounds = Math.floor(streak / 2) % 2
+  const baseCross = everyRound ^ everyTwoRounds
+  const iLow = baseCross === 0 ? 1 + lowIndex : 8 + lowIndex
+  const iHigh = baseCross === 0 ? 8 + highIndex : 1 + highIndex
+  return {
+    lowIndex,
+    highIndex,
+    audioFileLow: audioFileForIndex(iLow),
+    audioFileHigh: audioFileForIndex(iHigh),
+  }
+}
+
+/**
+ * Ex. 9 — mesmas regras de oitava que o Ex. 5, com par aleatório em {C–D, C–E, C–F, D–E, D–F, E–F}; MA = grave → agudo.
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise9PickRound(opts) {
+  return pickTwoMaRoundFromPairs(EXERCISE_9_VALID_PAIRS, 3, opts)
+}
+
+/**
+ * Ex. 13 — mesmas regras de oitava que o Ex. 9, com par aleatório em todos os pares C–…–G; MA = grave → agudo.
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise13PickRound(opts) {
+  return pickTwoMaRoundFromPairs(EXERCISE_13_VALID_PAIRS, 4, opts)
+}
+
+/**
+ * Ex. 10 — mesmas regras de oitava e pares que o Ex. 9; MD = áudio agudo → grave (igual ao Ex. 6).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise10PickRound(opts) {
+  return exercise9PickRound(opts)
+}
+
+/**
+ * Ex. 14 — mesmas regras de oitava e pares que o Ex. 13; MD = áudio agudo → grave (igual ao Ex. 10).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise14PickRound(opts) {
+  return exercise13PickRound(opts)
+}
+
+/**
+ * Ex. 17 — mesmas regras de oitava e pares que o Ex. 13, com todos os pares C–…–A; MA = grave → agudo (como o Ex. 13).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise18PickRound(opts) {
+  return pickTwoMaRoundFromPairs(EXERCISE_18_VALID_PAIRS, 5, opts)
+}
+
+/**
+ * Ex. 21 — mesmas regras de oitava e pares que o Ex. 17, com todos os pares C–…–B; MA = grave → agudo.
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise22PickRound(opts) {
+  return pickTwoMaRoundFromPairs(EXERCISE_22_VALID_PAIRS, 6, opts)
+}
+
+/**
+ * Ex. 18 — mesmas regras de oitava e pares que o Ex. 17; MD = áudio agudo → grave (igual ao Ex. 14).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise19PickRound(opts) {
+  return exercise18PickRound(opts)
+}
+
+/**
+ * Ex. 22 — mesmas regras de oitava e pares que o Ex. 21; MD = áudio agudo → grave (igual ao Ex. 18).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise23PickRound(opts) {
+  return exercise22PickRound(opts)
+}
+
+/**
+ * Ex. 11 — mesmas regras de oitava e pares que o Ex. 9; H = simultâneo (igual ao Ex. 7).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise11PickRound(opts) {
+  return exercise9PickRound(opts)
+}
+
+/**
+ * Ex. 15 — mesmas regras de oitava e pares que o Ex. 13; H = simultâneo (igual ao Ex. 11).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise15PickRound(opts) {
+  return exercise13PickRound(opts)
+}
+
+/**
+ * Ex. 19 — mesmas regras de oitava e pares que o Ex. 17; H simultâneo (como os Ex. 11 e 15).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise20PickRound(opts) {
+  return pickTwoMaRoundFromPairs(EXERCISE_18_VALID_PAIRS, 5, opts)
+}
+
+/**
+ * Ex. 23 — mesmas regras de oitava e pares que o Ex. 21; H simultâneo (como os Ex. 11, 15 e 19).
+ *
+ * @param {{ streak: number }} opts
+ * @returns {{ lowIndex: number, highIndex: number, audioFileLow: string, audioFileHigh: string }}
+ */
+export function exercise24PickRound(opts) {
+  return pickTwoMaRoundFromPairs(EXERCISE_22_VALID_PAIRS, 6, opts)
 }
