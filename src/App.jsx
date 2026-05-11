@@ -40,9 +40,10 @@ import {
   exercise37PickRound,
   exercise39PickRound,
   exercise41PickRound,
-  exercise42PickRound,
   exercise43PickRound,
   pickClassicOneNoteRound,
+  pickClassicOneNoteRoundEx42,
+  exercise44PickRound,
 } from './classicExercises.js'
 import { PianoKeyboard } from './components/PianoKeyboard.jsx'
 import { BLACK_KEYS, WHITE_KEYS } from './pianoKeys.js'
@@ -79,7 +80,7 @@ const CLASSIC_EX36_EX37_ALLOWED_BLACK_INDICES = new Set([
   BLACK_KEYS.findIndex((k) => k.sharp === 'C#'),
 ])
 
-/** Só A#/Bb (ex. 40 uma nota; ex. 41 MA, 42 MD e 43 H). */
+/** Só A#/Bb (ex. 40 uma nota; ex. 41 MA e 43 H). */
 const CLASSIC_EX40_EX41_ALLOWED_BLACK_INDICES = new Set([
   BLACK_KEYS.findIndex((k) => k.sharp === 'A#'),
 ])
@@ -99,7 +100,7 @@ function delay(ms) {
 /** IDs internos na ordem do percurso (ex. 2 e 3 omitidos). */
 const CLASSIC_EXERCISE_IDS_IN_ORDER = [
   1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-  24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43,
+  24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 42, 44
 ]
 
 const CLASSIC_EXERCISE_COUNT = CLASSIC_EXERCISE_IDS_IN_ORDER.length
@@ -113,94 +114,62 @@ function classicExerciseDisplayNumber(internalId) {
   return n !== undefined ? n : internalId
 }
 
-/** Corpo do título (após «Exercício n: »), por ID interno. */
-const CLASSIC_INSTRUCTION_BODY_BY_ID = {
-  1: 'Notas C e D - 1 nota',
-  4: 'Notas C, D e E - 1 nota',
-  5: 'Notas C, D e E - 2 notas (MA)',
-  6: 'Notas C, D e E - 2 notas (md)',
-  7: 'Notas C, D e E - 2 notas (H)',
-  8: 'Notas C, D, E e F - 1 nota',
-  9: 'Notas C, D, E e F - 2 notas (MA)',
-  10: 'Notas C, D, E e F - 2 notas (MD)',
-  11: 'Notas C, D, E e F - 2 notas (H)',
-  12: 'Notas C, D, E, F e G - 1 nota',
-  13: 'Notas C, D, E, F e G - 2 notas (MA)',
-  14: 'Notas C, D, E, F e G - 2 notas (MD)',
-  15: 'Notas C, D, E, F e G - 2 notas (H)',
-  16: 'Notas C, D, E, F, G e A - 1 nota',
-  17: 'Notas C, D, E, F, G e A - 2 notas (MA)',
-  18: 'Notas C, D, E, F, G e A - 2 notas (MD)',
-  19: 'Notas C, D, E, F, G e A - 2 notas (H)',
-  20: 'Notas C, D, E, F, G, A e B - 1 nota',
-  21: 'Notas C, D, E, F, G, A e B - 2 notas (MA)',
-  22: 'Notas C, D, E, F, G, A e B - 2 notas (MD)',
-  23: 'Notas C, D, E, F, G, A e B - 2 notas (H)',
-  24: 'Notas C, D, E, F, G, A, B e G#-Ab - 1 nota',
-  25: 'Notas C, D, E, F, G, A, B e G#-Ab - 2 notas (MA)',
-  26: 'Notas C, D, E, F, G e A, B e G#-Ab - 2 notas (MD)',
-  27: 'Notas C, D, E, F, G e A e G#-Ab - 2 notas (H)',
-  28: 'Notas C, D, E, F, G, A, B e F#-Gb - 1 nota',
-  29: 'Notas C, D, E, F, G, A, B e F#-Gb - 2 notas (MA)',
-  30: 'Notas C, D, E, F, G e A, B e F#-Gb - 2 notas (MD)',
-  31: 'Notas C, D, E, F, G e A e F#-Gb - 2 notas (H)',
-  32: 'Notas C, D, E, F, G, A, B e D#-Eb - 1 nota',
-  33: 'Notas C, D, E, F, G, A, B e D#-Eb - 2 notas (MA)',
-  34: 'Notas C, D, E, F, G e A, B e D#-Eb - 2 notas (MD)',
-  35: 'Notas C, D, E, F, G e A e D#-Eb - 2 notas (H)',
-  36: 'Notas C, D, E, F, G, A, B e C#-Db - 1 nota',
-  37: 'Notas C, D, E, F, G, A, B e C#-Db - 2 notas (MA)',
-  38: 'Notas C, D, E, F, G e A, B e C#-Db - 2 notas (MD)',
-  39: 'Notas C, D, E, F, G e A e C#-Db - 2 notas (H)',
-  40: 'Notas C, D, E, F, G, A, B e A#-Bb - 1 nota',
-  41: 'Notas C, D, E, F, G, A, B e A#-Bb - 2 notas (MA)',
-  42: 'Notas C, D, E, F, G, A, B e A#-Bb - 2 notas (MD)',
-  43: 'Notas C, D, E, F, G e A e A#-Bb - 2 notas (H)',
-}
+/**
+ * Corpo do título (após «Exercício n: ») e rótulo curto do select, na mesma ordem
+ * que CLASSIC_EXERCISE_IDS_IN_ORDER (1.º percurso … 41.º).
+ */
+const CLASSIC_INSTRUCTION_ROWS = [
+  ['Notas C e D - 1 nota', 'uma nota (C e D)'],
+  ['Notas C, D e E - 1 nota', 'uma nota (C, D e E)'],
+  ['Notas C, D e E - 2 notas (MA)', 'duas notas C, D e E (MA)'],
+  ['Notas C, D e E - 2 notas (MD)', 'duas notas C, D e E (MD)'],
+  ['Notas C, D e E - 2 notas (H)', 'duas notas C, D e E (harmónico)'],
+  ['Notas C, D, E e F - 1 nota', 'uma nota (C, D, E e F)'],
+  ['Notas C, D, E e F - 2 notas (MA)', 'duas notas C, D, E e F (MA)'],
+  ['Notas C, D, E e F - 2 notas (MD)', 'duas notas C, D, E e F (MD)'],
+  ['Notas C, D, E e F - 2 notas (H)', 'duas notas C, D, E e F (harmónico)'],
+  ['Notas C, D, E, F e G - 1 nota', 'uma nota (C, D, E, F e G)'],
+  ['Notas C, D, E, F e G - 2 notas (MA)', 'duas notas C, D, E, F e G (MA)'],
+  ['Notas C, D, E, F e G - 2 notas (MD)', 'duas notas C, D, E, F e G (MD)'],
+  ['Notas C, D, E, F e G - 2 notas (H)', 'duas notas C, D, E, F e G (harmónico)'],
+  ['Notas C, D, E, F, G e A - 1 nota', 'uma nota (C, D, E, F, G e A)'],
+  ['Notas C, D, E, F, G e A - 2 notas (MA)', 'duas notas C, D, E, F, G e A (MA)'],
+  ['Notas C, D, E, F, G e A - 2 notas (MD)', 'duas notas C, D, E, F, G e A (MD)'],
+  ['Notas C, D, E, F, G e A - 2 notas (H)', 'duas notas C, D, E, F, G e A (harmónico)'],
+  ['Notas C, D, E, F, G, A e B - 1 nota', 'uma nota (C, D, E, F, G, A e B)'],
+  ['Notas C, D, E, F, G, A e B - 2 notas (MA)', 'duas notas C, D, E, F, G, A e B (MA)'],
+  ['Notas C, D, E, F, G, A e B - 2 notas (MD)', 'duas notas C, D, E, F, G, A e B (MD)'],
+  ['Notas C, D, E, F, G, A e B - 2 notas (H)', 'duas notas C, D, E, F, G, A e B (harmónico)'],
+  ['Notas C, D, E, F, G, A, B e G#-Ab - 1 nota', 'uma nota C, D, E, F, G, A, B e G#-Ab'],
+  ['Notas C, D, E, F, G, A, B e G#-Ab - 2 notas (MA)', 'duas notas C…B e G#-Ab (MA)'],
+  ['Notas C, D, E, F, G e A, B e G#-Ab - 2 notas (MD)', 'duas notas C…B e G#-Ab (MD)'],
+  ['Notas C, D, E, F, G e A e G#-Ab - 2 notas (H)', 'duas notas C…B e G#-Ab (harmónico)'],
+  ['Notas C, D, E, F, G, A, B e F#-Gb - 1 nota', 'uma nota C…B e F#-Gb'],
+  ['Notas C, D, E, F, G, A, B e F#-Gb - 2 notas (MA)', 'duas notas C…B e F#-Gb (MA)'],
+  ['Notas C, D, E, F, G e A, B e F#-Gb - 2 notas (MD)', 'duas notas C…B e F#-Gb (MD)'],
+  ['Notas C, D, E, F, G e A e F#-Gb - 2 notas (H)', 'duas notas C…B e F#-Gb (harmónico)'],
+  ['Notas C, D, E, F, G, A, B e D#-Eb - 1 nota', 'uma nota C…B e D#-Eb'],
+  ['Notas C, D, E, F, G, A, B e D#-Eb - 2 notas (MA)', 'duas notas C…B e D#-Eb (MA)'],
+  ['Notas C, D, E, F, G e A, B e D#-Eb - 2 notas (MD)', 'duas notas C…B e D#-Eb (MD)'],
+  ['Notas C, D, E, F, G e A e D#-Eb - 2 notas (H)', 'duas notas C…B e D#-Eb (harmónico)'],
+  ['Notas C, D, E, F, G, A, B e C#-Db - 1 nota', 'uma nota C…B e C#-Db'],
+  ['Notas C, D, E, F, G, A, B e C#-Db - 2 notas (MA)', 'duas notas C…B e C#-Db (MA)'],
+  ['Notas C, D, E, F, G e A, B e C#-Db - 2 notas (MD)', 'duas notas C…B e C#-Db (MD)'],
+  ['Notas C, D, E, F, G e A e C#-Db - 2 notas (H)', 'duas notas C…B e C#-Db (harmónico)'],
+  ['Notas C, D, E, F, G, A, B e A#-Bb - 1 nota', 'uma nota C…B e A#-Bb'],
+  ['Notas C, D, E, F, G, A, B e A#-Bb - 2 notas (MA)', 'duas notas C…B e A#-Bb (MA)'],
+  ['Notas C, D, E, F, G e A e A#-Bb - 2 notas (H)', 'duas notas C…B e A#-Bb (harmónico)'],
+  ['Acorde diminuto 1: D, F, G#-Ab, B - 1 nota', 'uma nota diminuto 1 (D, F, G#-Ab, B)'],
+  ['Acorde diminuto 1: D, F, G#-Ab, B - 2 notas (MA)', 'duas notas diminuto 1 (MA)']
+]
 
-const CLASSIC_SELECT_SHORT_LABEL_BY_ID = {
-  1: 'uma nota (C e D)',
-  4: 'uma nota (C, D e E)',
-  5: 'duas notas C, D e E (MA)',
-  6: 'duas notas C, D e E (MD)',
-  7: 'duas notas C, D e E (harmónico)',
-  8: 'uma nota (C, D, E e F)',
-  9: 'duas notas C, D, E e F (MA)',
-  10: 'duas notas C, D, E e F (MD)',
-  11: 'duas notas C, D, E e F (harmónico)',
-  12: 'uma nota (C, D, E, F e G)',
-  13: 'duas notas C, D, E, F e G (MA)',
-  14: 'duas notas C, D, E, F e G (MD)',
-  15: 'duas notas C, D, E, F e G (harmónico)',
-  16: 'uma nota (C, D, E, F, G e A)',
-  17: 'duas notas C, D, E, F, G e A (MA)',
-  18: 'duas notas C, D, E, F, G e A (MD)',
-  19: 'duas notas C, D, E, F, G e A (harmónico)',
-  20: 'uma nota (C, D, E, F, G, A e B)',
-  21: 'duas notas C, D, E, F, G, A e B (MA)',
-  22: 'duas notas C, D, E, F, G, A e B (MD)',
-  23: 'duas notas C, D, E, F, G, A e B (harmónico)',
-  24: 'uma nota C, D, E, F, G, A, B e G#-Ab',
-  25: 'duas notas C…B e G#-Ab (MA)',
-  26: 'duas notas C…B e G#-Ab (MD)',
-  27: 'duas notas C…B e G#-Ab (harmónico)',
-  28: 'uma nota C…B e F#-Gb',
-  29: 'duas notas C…B e F#-Gb (MA)',
-  30: 'duas notas C…B e F#-Gb (MD)',
-  31: 'duas notas C…B e F#-Gb (harmónico)',
-  32: 'uma nota C…B e D#-Eb',
-  33: 'duas notas C…B e D#-Eb (MA)',
-  34: 'duas notas C…B e D#-Eb (MD)',
-  35: 'duas notas C…B e D#-Eb (harmónico)',
-  36: 'uma nota C…B e C#-Db',
-  37: 'duas notas C…B e C#-Db (MA)',
-  38: 'duas notas C…B e C#-Db (MD)',
-  39: 'duas notas C…B e C#-Db (harmónico)',
-  40: 'uma nota C…B e A#-Bb',
-  41: 'duas notas C…B e A#-Bb (MA)',
-  42: 'duas notas C…B e A#-Bb (MD)',
-  43: 'duas notas C…B e A#-Bb (harmónico)',
-}
+const CLASSIC_INSTRUCTION_BODY_BY_ID = Object.fromEntries(
+  CLASSIC_EXERCISE_IDS_IN_ORDER.map((id, i) => [id, CLASSIC_INSTRUCTION_ROWS[i][0]]),
+)
+
+const CLASSIC_SELECT_SHORT_LABEL_BY_ID = Object.fromEntries(
+  CLASSIC_EXERCISE_IDS_IN_ORDER.map((id, i) => [id, CLASSIC_INSTRUCTION_ROWS[i][1]]),
+)
 
 export default function App() {
   const { playFile: play, pauseAll: pauseAllNoteAudio } = useNoteAudio()
@@ -670,19 +639,24 @@ export default function App() {
       return
     }
     if (classicExerciseIdRef.current === 42) {
-      const r = exercise42PickRound(ctx)
-      roundRef.current = {
-        kind: 'one',
-        exercise25Slots: { slot0: r.slot0, slot1: r.slot1 },
-        audioFileLow: r.audioFileLow,
-        audioFileHigh: r.audioFileHigh,
-      }
+      const { target, audioFile } = pickClassicOneNoteRoundEx42(ctx)
+      roundRef.current = { kind: 'one', target, audioFile }
       return
     }
     if (classicExerciseIdRef.current === 43) {
       const r = exercise43PickRound(ctx)
       roundRef.current = {
         kind: 'twoH',
+        exercise25Slots: { slot0: r.slot0, slot1: r.slot1 },
+        audioFileLow: r.audioFileLow,
+        audioFileHigh: r.audioFileHigh,
+      }
+      return
+    }
+    if (classicExerciseIdRef.current === 44) {
+      const r = exercise44PickRound(ctx)
+      roundRef.current = {
+        kind: 'twoMa',
         exercise25Slots: { slot0: r.slot0, slot1: r.slot1 },
         audioFileLow: r.audioFileLow,
         audioFileHigh: r.audioFileHigh,
@@ -1229,6 +1203,28 @@ export default function App() {
               return next
             }
 
+            if (
+              next >= VERIFICATION_TARGET &&
+              classicExerciseIdRef.current === 43
+            ) {
+              window.setTimeout(() => {
+                classicExerciseIdRef.current = 44
+                setClassicExerciseId(44)
+                rollVerificationHalf(verificationHalfRef)
+                setStreak(0)
+                frozenRef.current = false
+                setShowCorrectNotice(false)
+                setWhiteFeedback({})
+                setBlackFeedback({})
+                clearRevealOrdering()
+                answerPhaseRef.current = 0
+                exercise2FirstCorrectIndexRef.current = null
+                exercise2FirstCorrectBlackKeyRef.current = null
+                pickNewRound()
+              }, 650)
+              return next
+            }
+
             window.setTimeout(() => {
               frozenRef.current = false
               setShowCorrectNotice(false)
@@ -1736,12 +1732,14 @@ export default function App() {
           classicExerciseIdRef.current === 29 ||
           classicExerciseIdRef.current === 33 ||
           classicExerciseIdRef.current === 37 ||
-          classicExerciseIdRef.current === 41)
+          classicExerciseIdRef.current === 41 ||
+          classicExerciseIdRef.current === 44
+        )
       ) {
         const { slot0, slot1 } = round.exercise25Slots
         const id = classicExerciseIdRef.current
         const blackKind =
-          id === 25
+          id === 25 || id === 44
             ? 'gsharp'
             : id === 29
               ? 'fsharp'
@@ -3230,38 +3228,38 @@ export default function App() {
 
   const replayAriaLabel =
     classicExerciseId === 1 ||
-    classicExerciseId === 4 ||
-    classicExerciseId === 8 ||
-    classicExerciseId === 12 ||
-    classicExerciseId === 16 ||
-    classicExerciseId === 20 ||
-    classicExerciseId === 24 ||
-    classicExerciseId === 28 ||
-    classicExerciseId === 32 ||
-    classicExerciseId === 36 ||
-    classicExerciseId === 40
+      classicExerciseId === 4 ||
+      classicExerciseId === 8 ||
+      classicExerciseId === 12 ||
+      classicExerciseId === 16 ||
+      classicExerciseId === 20 ||
+      classicExerciseId === 24 ||
+      classicExerciseId === 28 ||
+      classicExerciseId === 32 ||
+      classicExerciseId === 36 ||
+      classicExerciseId === 40
       ? 'Reproduzir o áudio da nota desta rodada'
       : classicExerciseId === 7 ||
-          classicExerciseId === 11 ||
-          classicExerciseId === 15 ||
-          classicExerciseId === 19 ||
-          classicExerciseId === 23 ||
-          classicExerciseId === 27 ||
-          classicExerciseId === 31 ||
-          classicExerciseId === 35 ||
-          classicExerciseId === 39 ||
-          classicExerciseId === 43
+        classicExerciseId === 11 ||
+        classicExerciseId === 15 ||
+        classicExerciseId === 19 ||
+        classicExerciseId === 23 ||
+        classicExerciseId === 27 ||
+        classicExerciseId === 31 ||
+        classicExerciseId === 35 ||
+        classicExerciseId === 39 ||
+        classicExerciseId === 43
         ? 'Reproduzir as duas notas desta rodada em simultâneo (harmónico)'
         : classicExerciseId === 5 ||
-            classicExerciseId === 9 ||
-            classicExerciseId === 13 ||
-            classicExerciseId === 17 ||
-            classicExerciseId === 21 ||
-            classicExerciseId === 25 ||
-            classicExerciseId === 29 ||
-            classicExerciseId === 33 ||
-            classicExerciseId === 37 ||
-            classicExerciseId === 41
+          classicExerciseId === 9 ||
+          classicExerciseId === 13 ||
+          classicExerciseId === 17 ||
+          classicExerciseId === 21 ||
+          classicExerciseId === 25 ||
+          classicExerciseId === 29 ||
+          classicExerciseId === 33 ||
+          classicExerciseId === 37 ||
+          classicExerciseId === 41
           ? 'Reproduzir as duas notas desta rodada na ordem grave a agudo'
           : 'Reproduzir as duas notas desta rodada na ordem agudo a grave'
 
@@ -3385,79 +3383,81 @@ export default function App() {
             disabled={classicDisabled}
             allowedWhiteIndices={
               classicExerciseId === 20 ||
-              classicExerciseId === 21 ||
-              classicExerciseId === 22 ||
-              classicExerciseId === 23 ||
-              classicExerciseId === 24 ||
-              classicExerciseId === 25 ||
-              classicExerciseId === 26 ||
-              classicExerciseId === 27 ||
-              classicExerciseId === 28 ||
-              classicExerciseId === 29 ||
-              classicExerciseId === 30 ||
-              classicExerciseId === 31 ||
-              classicExerciseId === 32 ||
-              classicExerciseId === 33 ||
-              classicExerciseId === 34 ||
-              classicExerciseId === 35 ||
-              classicExerciseId === 36 ||
-              classicExerciseId === 37 ||
-              classicExerciseId === 38 ||
-              classicExerciseId === 39 ||
-              classicExerciseId === 40 ||
-              classicExerciseId === 41 ||
-              classicExerciseId === 42 ||
-              classicExerciseId === 43
+                classicExerciseId === 21 ||
+                classicExerciseId === 22 ||
+                classicExerciseId === 23 ||
+                classicExerciseId === 24 ||
+                classicExerciseId === 25 ||
+                classicExerciseId === 26 ||
+                classicExerciseId === 27 ||
+                classicExerciseId === 28 ||
+                classicExerciseId === 29 ||
+                classicExerciseId === 30 ||
+                classicExerciseId === 31 ||
+                classicExerciseId === 32 ||
+                classicExerciseId === 33 ||
+                classicExerciseId === 34 ||
+                classicExerciseId === 35 ||
+                classicExerciseId === 36 ||
+                classicExerciseId === 37 ||
+                classicExerciseId === 38 ||
+                classicExerciseId === 39 ||
+                classicExerciseId === 40 ||
+                classicExerciseId === 41 ||
+                classicExerciseId === 42 ||
+                classicExerciseId === 43
                 ? CLASSIC_CDEFGAB_WHITE_INDICES
                 : classicExerciseId === 16 ||
-                    classicExerciseId === 17 ||
-                    classicExerciseId === 18 ||
-                    classicExerciseId === 19
+                  classicExerciseId === 17 ||
+                  classicExerciseId === 18 ||
+                  classicExerciseId === 19
                   ? CLASSIC_CDEFGA_WHITE_INDICES
-                : classicExerciseId === 12 ||
+                  : classicExerciseId === 12 ||
                     classicExerciseId === 13 ||
                     classicExerciseId === 14 ||
                     classicExerciseId === 15
-                  ? CLASSIC_CDEFG_WHITE_INDICES
-                : classicExerciseId === 8 ||
-                    classicExerciseId === 9 ||
-                    classicExerciseId === 10 ||
-                    classicExerciseId === 11
-                  ? CLASSIC_CDEF_WHITE_INDICES
-                  : classicExerciseId === 4 ||
-                      classicExerciseId === 5 ||
-                      classicExerciseId === 6 ||
-                      classicExerciseId === 7
-                    ? CLASSIC_CDE_WHITE_INDICES
-                    : CLASSIC_CD_WHITE_INDICES
+                    ? CLASSIC_CDEFG_WHITE_INDICES
+                    : classicExerciseId === 8 ||
+                      classicExerciseId === 9 ||
+                      classicExerciseId === 10 ||
+                      classicExerciseId === 11
+                      ? CLASSIC_CDEF_WHITE_INDICES
+                      : classicExerciseId === 4 ||
+                        classicExerciseId === 5 ||
+                        classicExerciseId === 6 ||
+                        classicExerciseId === 7
+                        ? CLASSIC_CDE_WHITE_INDICES
+                        : CLASSIC_CD_WHITE_INDICES
             }
             allowedBlackIndices={
               classicExerciseId === 40 ||
-              classicExerciseId === 41 ||
-              classicExerciseId === 42 ||
-              classicExerciseId === 43
+                classicExerciseId === 41 ||
+                classicExerciseId === 43
                 ? CLASSIC_EX40_EX41_ALLOWED_BLACK_INDICES
-                : classicExerciseId === 36 ||
+                : classicExerciseId === 42
+                  ? CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
+                  : classicExerciseId === 36 ||
                     classicExerciseId === 37 ||
                     classicExerciseId === 38 ||
                     classicExerciseId === 39
-                  ? CLASSIC_EX36_EX37_ALLOWED_BLACK_INDICES
-                : classicExerciseId === 32 ||
-                    classicExerciseId === 33 ||
-                    classicExerciseId === 34 ||
-                    classicExerciseId === 35
-                  ? CLASSIC_EX32_ALLOWED_BLACK_INDICES
-                : classicExerciseId === 28 ||
-                    classicExerciseId === 29 ||
-                    classicExerciseId === 30 ||
-                    classicExerciseId === 31
-                  ? CLASSIC_EX28_ALLOWED_BLACK_INDICES
-                  : classicExerciseId === 24 ||
-                      classicExerciseId === 25 ||
-                      classicExerciseId === 26 ||
-                      classicExerciseId === 27
-                    ? CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
-                    : null
+                    ? CLASSIC_EX36_EX37_ALLOWED_BLACK_INDICES
+                    : classicExerciseId === 32 ||
+                      classicExerciseId === 33 ||
+                      classicExerciseId === 34 ||
+                      classicExerciseId === 35
+                      ? CLASSIC_EX32_ALLOWED_BLACK_INDICES
+                      : classicExerciseId === 28 ||
+                        classicExerciseId === 29 ||
+                        classicExerciseId === 30 ||
+                        classicExerciseId === 31
+                        ? CLASSIC_EX28_ALLOWED_BLACK_INDICES
+                        : classicExerciseId === 24 ||
+                          classicExerciseId === 25 ||
+                          classicExerciseId === 26 ||
+                          classicExerciseId === 27 ||
+                          classicExerciseId === 44
+                          ? CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
+                          : null
             }
             blackFeedback={blackFeedback}
             disableBlackKeys={
@@ -3480,7 +3480,8 @@ export default function App() {
               classicExerciseId !== 40 &&
               classicExerciseId !== 41 &&
               classicExerciseId !== 42 &&
-              classicExerciseId !== 43
+              classicExerciseId !== 43 &&
+              classicExerciseId !== 44
             }
           />
 
