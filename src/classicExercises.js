@@ -200,8 +200,8 @@ const EXERCISE_37_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-/** Ex. 41 (MA): branco–branco ou branco–A# / A#–branco com todas as brancas. */
-const EXERCISE_41_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
+/** Ex. 43 (H): branco–branco ou branco–A# / A#–branco com todas as brancas (só no 43; o 41 MA usa G#/Ab como o 25). */
+const EXERCISE_43_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
 }))
@@ -542,14 +542,23 @@ export function exercise39PickRound(opts) {
 }
 
 /**
- * Ex. 41 (MA) — mesmas regras de oitava nas brancas que o Ex. 21; pares = Ex. 21 ∪ {branca,Lá#/Si♭} conforme altura (`p5-Asharp-Bb.mp3`; A# entre A e B: só A com A# agudo; A# grave com B).
+ * Ex. 41 (MA) — mesmas regras de oitava nas brancas e pares com G#/Ab que o Ex. 25 (`exercise25PickRound`); única preta tocável: G#/Ab.
+ *
+ * @param {{ streak: number }} opts
+ */
+export function exercise41PickRound(opts) {
+  return exercise25PickRound(opts)
+}
+
+/**
+ * Ex. 43 (H) — mesmos pares e oitavas que o conjunto A#/Bb (`EXERCISE_43_MA_SPECS`); os dois sons em simultâneo; ordem dos cliques livre (como o Ex. 23).
  *
  * @param {{ streak: number }} opts
  * @returns {{ audioFileLow: string, audioFileHigh: string, slot0: {kind:'white',index:number}|{kind:'asharp'}, slot1: {kind:'white',index:number}|{kind:'asharp'} }}
  */
-export function exercise41PickRound({ streak }) {
+export function exercise43PickRound({ streak }) {
   const spec = pickByVerificationTarget(
-    EXERCISE_41_MA_SPECS,
+    EXERCISE_43_MA_SPECS,
     (candidate) => candidate.type !== 'ww',
     streak,
   )
@@ -583,17 +592,6 @@ export function exercise41PickRound({ streak }) {
     slot0: { kind: 'asharp' },
     slot1: { kind: 'white', index: w },
   }
-}
-
-
-/**
- * Ex. 43 (H) — mesmos pares e oitavas que o Ex. 41 (`exercise41PickRound`); os dois sons em simultâneo; ordem dos cliques livre (como o Ex. 23).
- *
- * @param {{ streak: number }} opts
- * @returns {{ audioFileLow: string, audioFileHigh: string, slot0: {kind:'white',index:number}|{kind:'asharp'}, slot1: {kind:'white',index:number}|{kind:'asharp'} }}
- */
-export function exercise43PickRound(opts) {
-  return exercise41PickRound(opts)
 }
 
 function pickFrom(arr) {

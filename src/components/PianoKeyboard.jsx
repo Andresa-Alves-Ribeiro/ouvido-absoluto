@@ -9,10 +9,11 @@ function stopEvent(e) {
  * @param {Record<number, 'correct' | 'reveal'>} [whiteFeedback]
  * @param {Record<number, number>} [whiteRevealOrder] Índice da branca → ordem (1, 2…) na revelação de erro
  * @param {(index: number, label: string) => void} [onWhitePress]
- * @param {() => void} [onBlackPress]
+ * @param {(blackKeyIndex: number) => void} [onBlackPress]
  * @param {boolean} [disabled]
  * @param {ReadonlySet<number> | null} [allowedWhiteIndices] Se definido, só esses índices de branca são clicáveis
- * @param {boolean} [disableBlackKeys]
+ * @param {ReadonlySet<number> | null} [allowedBlackIndices] Se definido, só esses índices em BLACK_KEYS são clicáveis
+ * @param {boolean} [disableBlackKeys] Se true, todas as pretas ficam desactivadas (ignora allowedBlackIndices)
  */
 export function PianoKeyboard({
   whiteFeedback = {},
@@ -21,12 +22,19 @@ export function PianoKeyboard({
   onBlackPress,
   disabled = false,
   allowedWhiteIndices = null,
+  allowedBlackIndices = null,
   disableBlackKeys = false,
 }) {
   const n = WHITE_COUNT
 
   const whiteClickable = (i) =>
     allowedWhiteIndices == null || allowedWhiteIndices.has(i)
+
+  const blackClickable = (i) => {
+    if (disabled || disableBlackKeys) return false
+    if (allowedBlackIndices == null) return true
+    return allowedBlackIndices.has(i)
+  }
 
   return (
     <div className="piano-board" aria-label="Teclado base clicável">
@@ -73,7 +81,8 @@ export function PianoKeyboard({
               /* Centro na junção entre duas brancas; ~47% da largura de cada branca (≈ proporcao real ~11∶23 mm). */
               const leftPct = ((k.afterWhite + 1) / n) * 100
               const widthPct = (100 / n) * 0.47
-              const blackDisabled = disabled || disableBlackKeys
+              const clickable = blackClickable(i)
+              const blackDisabled = disabled || !clickable
               return (
                 <button
                   key={`b-${i}-${k.afterWhite}`}
@@ -88,8 +97,8 @@ export function PianoKeyboard({
                   disabled={blackDisabled}
                   onPointerDown={(e) => {
                     stopEvent(e)
-                    if (blackDisabled) return
-                    onBlackPress?.()
+                    if (!clickable) return
+                    onBlackPress?.(i)
                   }}
                 >
                   <span className="piano-black-label">
