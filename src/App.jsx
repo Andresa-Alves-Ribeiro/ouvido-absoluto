@@ -44,6 +44,9 @@ import {
   pickClassicOneNoteRound,
   pickClassicOneNoteRoundEx42,
   exercise44PickRound,
+  exercise45PickRound,
+  exercise46PickRound,
+  pickClassicOneNoteRoundEx47,
 } from './classicExercises.js'
 import { PianoKeyboard } from './components/PianoKeyboard.jsx'
 import { BLACK_KEYS, WHITE_KEYS } from './pianoKeys.js'
@@ -59,6 +62,7 @@ const CLASSIC_CDEFG_WHITE_INDICES = new Set([0, 1, 2, 3, 4])
 const CLASSIC_CDEFGA_WHITE_INDICES = new Set([0, 1, 2, 3, 4, 5])
 const CLASSIC_CDEFGAB_WHITE_INDICES = new Set([0, 1, 2, 3, 4, 5, 6])
 const CLASSIC_DIMINISHED1_WHITE_INDICES = new Set([1, 3, 6])
+const CLASSIC_DIMINISHED2_WHITE_INDICES = new Set([0, 5]) // C=0, A=5
 
 /** Índice em BLACK_KEYS — só a G#/Ab fica clicável nos ex. 24 a 27 e 41 a 42; só F#/Gb nos ex. 28 a 31; só D#/Eb nos ex. 32 (uma nota) e 33–35 (dois sons MA, MD e H); só C#/Db nos ex. 36 (uma nota) e 37–39 (dois sons MA, MD e H); só A#/Bb nos ex. 40 (uma nota) e 43 (H). */
 const CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES = new Set([
@@ -85,6 +89,11 @@ const CLASSIC_EX40_EX41_ALLOWED_BLACK_INDICES = new Set([
   BLACK_KEYS.findIndex((k) => k.sharp === 'A#'),
 ])
 
+const CLASSIC_EX47_ALLOWED_BLACK_INDICES = new Set([
+  BLACK_KEYS.findIndex((k) => k.sharp === 'D#'),
+  BLACK_KEYS.findIndex((k) => k.sharp === 'F#'),
+])
+
 const BETWEEN_NOTES_MS = 1000
 
 function rollVerificationHalf(halfRef) {
@@ -100,7 +109,7 @@ function delay(ms) {
 /** IDs internos na ordem do percurso (ex. 2 e 3 omitidos). */
 const CLASSIC_EXERCISE_IDS_IN_ORDER = [
   1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-  24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 42, 44
+  24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 42, 44, 45, 46, 47
 ]
 
 const CLASSIC_EXERCISE_COUNT = CLASSIC_EXERCISE_IDS_IN_ORDER.length
@@ -160,7 +169,10 @@ const CLASSIC_INSTRUCTION_ROWS = [
   ['Notas C, D, E, F, G, A, B e G#-Ab - 2 notas (MA)', 'duas notas C…B e G#-Ab (MA)'],
   ['Notas C, D, E, F, G e A e A#-Bb - 2 notas (H)', 'duas notas C…B e A#-Bb (harmónico)'],
   ['Acorde diminuto 1: D, F, G#-Ab, B - 1 nota', 'uma nota diminuto 1 (D, F, G#-Ab, B)'],
-  ['Acorde diminuto 1: D, F, G#-Ab, B - 2 notas (MA)', 'duas notas diminuto 1 (D, F, G#-Ab, B) (MA)']
+  ['Acorde diminuto 1: D, F, G#-Ab, B - 2 notas (MA)', 'duas notas diminuto 1 (D, F, G#-Ab, B) (MA)'],
+  ['Acorde diminuto 1: D, F, G#-Ab, B - 2 notas (MD)', 'duas notas diminuto 1 (D, F, G#-Ab, B) (MD)'],
+  ['Acorde diminuto 1: D, F, G#-Ab, B - 2 notas (H)', 'duas notas diminuto 1 (D, F, G#-Ab, B) (harmonico)'],
+  ['Acorde diminuto 2: C, D#-Eb, F#-Gb, A - 1 nota', 'uma nota diminuto 2 (C, D#-Eb, F#-Gb, A)']
 ]
 
 const CLASSIC_INSTRUCTION_BODY_BY_ID = Object.fromEntries(
@@ -258,7 +270,9 @@ export default function App() {
         classicExerciseIdRef.current === 32 ||
         classicExerciseIdRef.current === 36 ||
         classicExerciseIdRef.current === 40 ||
-        classicExerciseIdRef.current === 42) &&
+        classicExerciseIdRef.current === 42 ||
+        classicExerciseIdRef.current === 47
+      ) &&
       streakNow < 10 &&
       streakNow % 2 === 0
     ) {
@@ -664,6 +678,31 @@ export default function App() {
       }
       return
     }
+    if (classicExerciseIdRef.current === 45) {
+      const r = exercise45PickRound(ctx)
+      roundRef.current = {
+        kind: 'twoMd',
+        exercise25Slots: { slot0: r.slot0, slot1: r.slot1 },
+        audioFileLow: r.audioFileLow,
+        audioFileHigh: r.audioFileHigh,
+      }
+      return
+    }
+    if (classicExerciseIdRef.current === 46) {
+      const r = exercise46PickRound(ctx)
+      roundRef.current = {
+        kind: 'twoH',
+        exercise25Slots: { slot0: r.slot0, slot1: r.slot1 },
+        audioFileLow: r.audioFileLow,
+        audioFileHigh: r.audioFileHigh,
+      }
+      return
+    }
+    if (classicExerciseIdRef.current === 47) {
+      const { target, audioFile } = pickClassicOneNoteRoundEx47(ctx)
+      roundRef.current = { kind: 'one', target, audioFile }
+      return
+    }
   }, [pauseAllNoteAudio])
 
   /** Reproduz o áudio da rodada atual (apenas ao clicar no botão). */
@@ -923,7 +962,7 @@ export default function App() {
   const handleClassicExerciseSelectChange = useCallback(
     (e) => {
       const raw = Number(e.target.value)
-      let id = raw >= 1 && raw <= 44 ? raw : 1
+      let id = raw >= 1 && raw <= 47 ? raw : 1
       if (id === 2 || id === 3) id = 4
 
       classicExerciseIdRef.current = id
@@ -1248,6 +1287,72 @@ export default function App() {
               return next
             }
 
+            if (
+              next >= VERIFICATION_TARGET &&
+              classicExerciseIdRef.current === 44
+            ) {
+              window.setTimeout(() => {
+                classicExerciseIdRef.current = 45
+                setClassicExerciseId(45)
+                rollVerificationHalf(verificationHalfRef)
+                setStreak(0)
+                frozenRef.current = false
+                setShowCorrectNotice(false)
+                setWhiteFeedback({})
+                setBlackFeedback({})
+                clearRevealOrdering()
+                answerPhaseRef.current = 0
+                exercise2FirstCorrectIndexRef.current = null
+                exercise2FirstCorrectBlackKeyRef.current = null
+                pickNewRound()
+              }, 650)
+              return next
+            }
+
+            if (
+              next >= VERIFICATION_TARGET &&
+              classicExerciseIdRef.current === 45
+            ) {
+              window.setTimeout(() => {
+                classicExerciseIdRef.current = 46
+                setClassicExerciseId(46)
+                rollVerificationHalf(verificationHalfRef)
+                setStreak(0)
+                frozenRef.current = false
+                setShowCorrectNotice(false)
+                setWhiteFeedback({})
+                setBlackFeedback({})
+                clearRevealOrdering()
+                answerPhaseRef.current = 0
+                exercise2FirstCorrectIndexRef.current = null
+                exercise2FirstCorrectBlackKeyRef.current = null
+                pickNewRound()
+              }, 650)
+              return next
+            }
+
+            if (
+              next >= VERIFICATION_TARGET &&
+              classicExerciseIdRef.current === 46
+            ) {
+              window.setTimeout(() => {
+                classicExerciseIdRef.current = 47
+                setClassicExerciseId(47)
+                rollVerificationHalf(verificationHalfRef)
+                setStreak(0)
+                frozenRef.current = false
+                setShowCorrectNotice(false)
+                setWhiteFeedback({})
+                setBlackFeedback({})
+                clearRevealOrdering()
+                answerPhaseRef.current = 0
+                exercise2FirstCorrectIndexRef.current = null
+                exercise2FirstCorrectBlackKeyRef.current = null
+                pickNewRound()
+              }, 650)
+              return next
+            }
+
             window.setTimeout(() => {
               frozenRef.current = false
               setShowCorrectNotice(false)
@@ -1274,7 +1379,8 @@ export default function App() {
             classicExerciseIdRef.current === 31 ||
             classicExerciseIdRef.current === 35 ||
             classicExerciseIdRef.current === 39 ||
-            classicExerciseIdRef.current === 43)
+            classicExerciseIdRef.current === 43 ||
+            classicExerciseIdRef.current === 46)
         ) {
           const { slot0, slot1 } = round.exercise25Slots
           const whiteMatches = (slot, idx) =>
@@ -1756,8 +1862,8 @@ export default function App() {
           classicExerciseIdRef.current === 33 ||
           classicExerciseIdRef.current === 37 ||
           classicExerciseIdRef.current === 41 ||
-          classicExerciseIdRef.current === 44
-        )
+          classicExerciseIdRef.current === 44 ||
+          classicExerciseIdRef.current === 45)
       ) {
         const { slot0, slot1 } = round.exercise25Slots
         const id = classicExerciseIdRef.current
@@ -1948,12 +2054,13 @@ export default function App() {
         (classicExerciseIdRef.current === 26 ||
           classicExerciseIdRef.current === 30 ||
           classicExerciseIdRef.current === 34 ||
-          classicExerciseIdRef.current === 38)
+          classicExerciseIdRef.current === 38 ||
+          classicExerciseIdRef.current === 45)
       ) {
         const { slot0, slot1 } = round.exercise25Slots
         const idMd = classicExerciseIdRef.current
         const blackKind =
-          idMd === 26
+          idMd === 26 || idMd === 45
             ? 'gsharp'
             : idMd === 30
               ? 'fsharp'
@@ -2624,6 +2731,53 @@ export default function App() {
         return
       }
 
+      if (classicExerciseIdRef.current === 47 && round.kind === 'one') {
+        const isDs = blackKeyIndex === dsharpIdx && round.target === 'D#'
+        const isFs = blackKeyIndex === fsharpIdx && round.target === 'F#'
+        if (!isDs && !isFs) {
+          frozenRef.current = true
+          handleWrongAnswer()
+          return
+        }
+
+        frozenRef.current = true
+        setShowCorrectNotice(true)
+        setBlackFeedback({ [blackKeyIndex]: 'correct' })
+        setWhiteFeedback({})
+
+        setStreak((s) => {
+          const next = s + 1
+
+          if (next >= VERIFICATION_TARGET && classicExerciseIdRef.current === 47) {
+            window.setTimeout(() => {
+              // transição para o próximo exercício
+              setExerciseComplete(true) // ou próximo id
+              frozenRef.current = false
+              setShowCorrectNotice(false)
+              setWhiteFeedback({})
+              setBlackFeedback({})
+              clearRevealOrdering()
+              answerPhaseRef.current = 0
+              exercise2FirstCorrectIndexRef.current = null
+              exercise2FirstCorrectBlackKeyRef.current = null
+            }, 650)
+            return next
+          }
+
+          window.setTimeout(() => {
+            frozenRef.current = false
+            setShowCorrectNotice(false)
+            setWhiteFeedback({})
+            setBlackFeedback({})
+            clearRevealOrdering()
+            if (gameModeRef.current === 'classic') pickNewRound()
+          }, 650)
+
+          return next
+        })
+        return
+      }
+
       if (
         (classicExerciseIdRef.current === 25 ||
           classicExerciseIdRef.current === 29 ||
@@ -2825,13 +2979,15 @@ export default function App() {
         (classicExerciseIdRef.current === 26 ||
           classicExerciseIdRef.current === 30 ||
           classicExerciseIdRef.current === 34 ||
-          classicExerciseIdRef.current === 38) &&
+          classicExerciseIdRef.current === 38 ||
+          classicExerciseIdRef.current === 45
+        ) &&
         round.kind === 'twoMd' &&
         round.exercise25Slots
       ) {
         const idMd = classicExerciseIdRef.current
         const wantSharpIdx =
-          idMd === 26
+          idMd === 26 || idMd === 45
             ? gsharpIdx
             : idMd === 30
               ? fsharpIdx
@@ -2839,7 +2995,7 @@ export default function App() {
                 ? csharpIdx
                 : dsharpIdx
         const blackKind =
-          idMd === 26
+          idMd === 26 || idMd === 45
             ? 'gsharp'
             : idMd === 30
               ? 'fsharp'
@@ -3371,82 +3527,90 @@ export default function App() {
             onBlackPress={handleBlackPress}
             disabled={classicDisabled}
             allowedWhiteIndices={
-              classicExerciseId === 42 ||
-                classicExerciseId === 44
-                ? CLASSIC_DIMINISHED1_WHITE_INDICES
-                : classicExerciseId === 20 ||
-                  classicExerciseId === 21 ||
-                  classicExerciseId === 22 ||
-                  classicExerciseId === 23 ||
-                  classicExerciseId === 24 ||
-                  classicExerciseId === 25 ||
-                  classicExerciseId === 26 ||
-                  classicExerciseId === 27 ||
-                  classicExerciseId === 28 ||
-                  classicExerciseId === 29 ||
-                  classicExerciseId === 30 ||
-                  classicExerciseId === 31 ||
-                  classicExerciseId === 32 ||
-                  classicExerciseId === 33 ||
-                  classicExerciseId === 34 ||
-                  classicExerciseId === 35 ||
-                  classicExerciseId === 36 ||
-                  classicExerciseId === 37 ||
-                  classicExerciseId === 38 ||
-                  classicExerciseId === 39 ||
-                  classicExerciseId === 40 ||
-                  classicExerciseId === 41 ||
-                  classicExerciseId === 43
-                  ? CLASSIC_CDEFGAB_WHITE_INDICES
-                  : classicExerciseId === 16 ||
-                    classicExerciseId === 17 ||
-                    classicExerciseId === 18 ||
-                    classicExerciseId === 19
-                    ? CLASSIC_CDEFGA_WHITE_INDICES
-                    : classicExerciseId === 12 ||
-                      classicExerciseId === 13 ||
-                      classicExerciseId === 14 ||
-                      classicExerciseId === 15
-                      ? CLASSIC_CDEFG_WHITE_INDICES
-                      : classicExerciseId === 8 ||
-                        classicExerciseId === 9 ||
-                        classicExerciseId === 10 ||
-                        classicExerciseId === 11
-                        ? CLASSIC_CDEF_WHITE_INDICES
-                        : classicExerciseId === 4 ||
-                          classicExerciseId === 5 ||
-                          classicExerciseId === 6 ||
-                          classicExerciseId === 7
-                          ? CLASSIC_CDE_WHITE_INDICES
-                          : CLASSIC_CD_WHITE_INDICES
-            }
-            allowedBlackIndices={
-              classicExerciseId === 40 || classicExerciseId === 43
-                ? CLASSIC_EX40_EX41_ALLOWED_BLACK_INDICES
-                : classicExerciseId === 41 || classicExerciseId === 42
-                  ? CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
-                  : classicExerciseId === 36 ||
+              classicExerciseId === 47
+                ? CLASSIC_DIMINISHED2_WHITE_INDICES
+                : classicExerciseId === 42 ||
+                  classicExerciseId === 44 ||
+                  classicExerciseId === 45 ||
+                  classicExerciseId === 46
+                  ? CLASSIC_DIMINISHED1_WHITE_INDICES
+                  : classicExerciseId === 20 ||
+                    classicExerciseId === 21 ||
+                    classicExerciseId === 22 ||
+                    classicExerciseId === 23 ||
+                    classicExerciseId === 24 ||
+                    classicExerciseId === 25 ||
+                    classicExerciseId === 26 ||
+                    classicExerciseId === 27 ||
+                    classicExerciseId === 28 ||
+                    classicExerciseId === 29 ||
+                    classicExerciseId === 30 ||
+                    classicExerciseId === 31 ||
+                    classicExerciseId === 32 ||
+                    classicExerciseId === 33 ||
+                    classicExerciseId === 34 ||
+                    classicExerciseId === 35 ||
+                    classicExerciseId === 36 ||
                     classicExerciseId === 37 ||
                     classicExerciseId === 38 ||
-                    classicExerciseId === 39
-                    ? CLASSIC_EX36_EX37_ALLOWED_BLACK_INDICES
-                    : classicExerciseId === 32 ||
-                      classicExerciseId === 33 ||
-                      classicExerciseId === 34 ||
-                      classicExerciseId === 35
-                      ? CLASSIC_EX32_ALLOWED_BLACK_INDICES
-                      : classicExerciseId === 28 ||
-                        classicExerciseId === 29 ||
-                        classicExerciseId === 30 ||
-                        classicExerciseId === 31
-                        ? CLASSIC_EX28_ALLOWED_BLACK_INDICES
-                        : classicExerciseId === 24 ||
-                          classicExerciseId === 25 ||
-                          classicExerciseId === 26 ||
-                          classicExerciseId === 27 ||
-                          classicExerciseId === 44
-                          ? CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
-                          : null
+                    classicExerciseId === 39 ||
+                    classicExerciseId === 40 ||
+                    classicExerciseId === 41 ||
+                    classicExerciseId === 43
+                    ? CLASSIC_CDEFGAB_WHITE_INDICES
+                    : classicExerciseId === 16 ||
+                      classicExerciseId === 17 ||
+                      classicExerciseId === 18 ||
+                      classicExerciseId === 19
+                      ? CLASSIC_CDEFGA_WHITE_INDICES
+                      : classicExerciseId === 12 ||
+                        classicExerciseId === 13 ||
+                        classicExerciseId === 14 ||
+                        classicExerciseId === 15
+                        ? CLASSIC_CDEFG_WHITE_INDICES
+                        : classicExerciseId === 8 ||
+                          classicExerciseId === 9 ||
+                          classicExerciseId === 10 ||
+                          classicExerciseId === 11
+                          ? CLASSIC_CDEF_WHITE_INDICES
+                          : classicExerciseId === 4 ||
+                            classicExerciseId === 5 ||
+                            classicExerciseId === 6 ||
+                            classicExerciseId === 7
+                            ? CLASSIC_CDE_WHITE_INDICES
+                            : CLASSIC_CD_WHITE_INDICES
+            }
+            allowedBlackIndices={
+              classicExerciseId === 47
+                ? CLASSIC_EX47_ALLOWED_BLACK_INDICES
+                : classicExerciseId === 40 || classicExerciseId === 43
+                  ? CLASSIC_EX40_EX41_ALLOWED_BLACK_INDICES
+                  : classicExerciseId === 41 || classicExerciseId === 42
+                    ? CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
+                    : classicExerciseId === 36 ||
+                      classicExerciseId === 37 ||
+                      classicExerciseId === 38 ||
+                      classicExerciseId === 39
+                      ? CLASSIC_EX36_EX37_ALLOWED_BLACK_INDICES
+                      : classicExerciseId === 32 ||
+                        classicExerciseId === 33 ||
+                        classicExerciseId === 34 ||
+                        classicExerciseId === 35
+                        ? CLASSIC_EX32_ALLOWED_BLACK_INDICES
+                        : classicExerciseId === 28 ||
+                          classicExerciseId === 29 ||
+                          classicExerciseId === 30 ||
+                          classicExerciseId === 31
+                          ? CLASSIC_EX28_ALLOWED_BLACK_INDICES
+                          : classicExerciseId === 24 ||
+                            classicExerciseId === 25 ||
+                            classicExerciseId === 26 ||
+                            classicExerciseId === 27 ||
+                            classicExerciseId === 44 ||
+                            classicExerciseId === 45 ||
+                            classicExerciseId === 46
+                            ? CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
+                            : null
             }
             blackFeedback={blackFeedback}
             disableBlackKeys={
@@ -3470,7 +3634,10 @@ export default function App() {
               classicExerciseId !== 41 &&
               classicExerciseId !== 42 &&
               classicExerciseId !== 43 &&
-              classicExerciseId !== 44
+              classicExerciseId !== 44 &&
+              classicExerciseId !== 45 &&
+              classicExerciseId !== 46 &&
+              classicExerciseId !== 47
             }
           />
 

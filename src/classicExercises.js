@@ -242,6 +242,55 @@ const EXERCISE_44_MA_SPECS = EXERCISE_44_DIMINISHED_PAIRS.map((pair) => ({
     [6].map((w) => ({ type: 'gw', w })),    // G#–B
   )
 
+const EXERCISE_45_MD_SPECS = EXERCISE_44_DIMINISHED_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat(
+    [1, 3].map((w) => ({ type: 'wg', w })),
+  )
+  .concat(
+    [6].map((w) => ({ type: 'gw', w })),
+  )
+
+export function exercise45PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_45_MD_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const gsharpFile = CLASSIC_ONE_NOTE_EX24_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wg') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: gsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'gsharp' },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+  return {
+    audioFileLow: gsharpFile,
+    audioFileHigh: audioFileForIndex(iWhite),
+    slot0: { kind: 'gsharp' },
+    slot1: { kind: 'white', index: w },
+  }
+}
+
 export function exercise44PickRound({ streak }) {
   const spec = pickByVerificationTarget(
     EXERCISE_44_MA_SPECS,
@@ -670,6 +719,8 @@ export const CLASSIC_ONE_NOTE_DIMINISHED1_WHITE_LABELS = ['D', 'F', 'B']
 
 export const CLASSIC_ONE_NOTE_EX42_LABELS = ['D', 'F', 'B']
 
+export const CLASSIC_ONE_NOTE_EX47_LABELS = ['C', 'A']
+
 
 /** Ex. 24 — G#/Ab; alvo interno sempre «G#»; o mesmo som que a tecla preta G#/Ab. */
 export const CLASSIC_ONE_NOTE_EX24_BLACK = {
@@ -815,6 +866,22 @@ export function pickClassicOneNoteRoundEx40({ streak, half }) {
   return { target: picked.target, audioFile: picked.audioFile }
 }
 
+export function pickClassicOneNoteRoundEx47({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX47_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices
+    .concat([CLASSIC_ONE_NOTE_EX32_BLACK])  // D#/Eb
+    .concat([CLASSIC_ONE_NOTE_EX28_BLACK])  // F#/Gb
+  const picked = pickOneNoteChoiceByTarget(
+    allChoices,
+    CLASSIC_ONE_NOTE_EX32_BLACK.target,
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
 /**
  * Ex. 5 — streak &lt; 10: alterna oitava inteira a cada rodada; streak ≥ 10: notas em oitavas cruzadas;
  * par aleatório em {C–D, C–E, D–E}; MA = primeiro o mais grave, depois o mais agudo.
@@ -871,6 +938,10 @@ export function pickClassicOneNoteRoundEx42({ streak, half }) {
     streak,
   )
   return { target: picked.target, audioFile: picked.audioFile }
+}
+
+export function exercise46PickRound(opts) {
+  return exercise44PickRound(opts)
 }
 
 /** Lógica de oitava partilhada pelos exercícios MA de brancas (grave → agudo). */
