@@ -54,7 +54,6 @@ import { useNoteAudio } from './useNoteAudio.js'
 
 const VERIFICATION_TARGET = 20
 
-/** Índices das brancas C e D (ex. 1); nos ex. 4–7 inclui-se E; nos ex. 8–11 também F; nos ex. 12–15 também G; nos ex. 16–19 também A; nos ex. 20–23 também B (G#/Ab nos ex. 24–27 e 41 MA; F#/Gb nos ex. 28–31; D#/Eb no ex. 32 uma nota e nos ex. 33–35 dois sons MA, MD e H; C#/Db no ex. 36 uma nota e nos ex. 37–39 dois sons MA, MD e H; A#/Bb no ex. 40 uma nota e no 43 H; ex. 42 uma nota no acorde diminuto 1 com G#/Ab como única preta). */
 const CLASSIC_CD_WHITE_INDICES = new Set([0, 1])
 const CLASSIC_CDE_WHITE_INDICES = new Set([0, 1, 2])
 const CLASSIC_CDEF_WHITE_INDICES = new Set([0, 1, 2, 3])
@@ -62,29 +61,24 @@ const CLASSIC_CDEFG_WHITE_INDICES = new Set([0, 1, 2, 3, 4])
 const CLASSIC_CDEFGA_WHITE_INDICES = new Set([0, 1, 2, 3, 4, 5])
 const CLASSIC_CDEFGAB_WHITE_INDICES = new Set([0, 1, 2, 3, 4, 5, 6])
 const CLASSIC_DIMINISHED1_WHITE_INDICES = new Set([1, 3, 6])
-const CLASSIC_DIMINISHED2_WHITE_INDICES = new Set([0, 5]) // C=0, A=5
+const CLASSIC_DIMINISHED2_WHITE_INDICES = new Set([0, 5])
 
-/** Índice em BLACK_KEYS — só a G#/Ab fica clicável nos ex. 24 a 27 e 41 a 42; só F#/Gb nos ex. 28 a 31; só D#/Eb nos ex. 32 (uma nota) e 33–35 (dois sons MA, MD e H); só C#/Db nos ex. 36 (uma nota) e 37–39 (dois sons MA, MD e H); só A#/Bb nos ex. 40 (uma nota) e 43 (H). */
 const CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES = new Set([
   BLACK_KEYS.findIndex((k) => k.sharp === 'G#'),
 ])
 
-/** Só F#/Gb (ex. 28, uma nota). */
 const CLASSIC_EX28_ALLOWED_BLACK_INDICES = new Set([
   BLACK_KEYS.findIndex((k) => k.sharp === 'F#'),
 ])
 
-/** Só D#/Eb (ex. 32 uma nota; ex. 33 MA, 34 MD e 35 H). */
 const CLASSIC_EX32_ALLOWED_BLACK_INDICES = new Set([
   BLACK_KEYS.findIndex((k) => k.sharp === 'D#'),
 ])
 
-/** Só C#/Db (ex. 36 uma nota; ex. 37 MA, 38 MD e 39 H). */
 const CLASSIC_EX36_EX37_ALLOWED_BLACK_INDICES = new Set([
   BLACK_KEYS.findIndex((k) => k.sharp === 'C#'),
 ])
 
-/** Só A#/Bb (ex. 40 uma nota; ex. 43 H). */
 const CLASSIC_EX40_EX41_ALLOWED_BLACK_INDICES = new Set([
   BLACK_KEYS.findIndex((k) => k.sharp === 'A#'),
 ])
@@ -106,7 +100,6 @@ function delay(ms) {
   })
 }
 
-/** IDs internos na ordem do percurso (ex. 2 e 3 omitidos). */
 const CLASSIC_EXERCISE_IDS_IN_ORDER = [
   1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
   24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 42, 44, 45, 46, 47
@@ -123,10 +116,60 @@ function classicExerciseDisplayNumber(internalId) {
   return n !== undefined ? n : internalId
 }
 
-/**
- * Corpo do título (após «Exercício n: ») e rótulo curto do select, na mesma ordem
- * que CLASSIC_EXERCISE_IDS_IN_ORDER (1.º percurso … 41.º).
- */
+function classicAllowedWhiteIndices(exerciseId) {
+  if (exerciseId === 47) return CLASSIC_DIMINISHED2_WHITE_INDICES
+  if (
+    exerciseId === 42 ||
+    exerciseId === 44 ||
+    exerciseId === 45 ||
+    exerciseId === 46
+  ) {
+    return CLASSIC_DIMINISHED1_WHITE_INDICES
+  }
+  if (
+    (exerciseId >= 20 && exerciseId <= 41) ||
+    exerciseId === 43
+  ) {
+    return CLASSIC_CDEFGAB_WHITE_INDICES
+  }
+  if (exerciseId >= 16 && exerciseId <= 19) return CLASSIC_CDEFGA_WHITE_INDICES
+  if (exerciseId >= 12 && exerciseId <= 15) return CLASSIC_CDEFG_WHITE_INDICES
+  if (exerciseId >= 8 && exerciseId <= 11) return CLASSIC_CDEF_WHITE_INDICES
+  if (exerciseId >= 4 && exerciseId <= 7) return CLASSIC_CDE_WHITE_INDICES
+  return CLASSIC_CD_WHITE_INDICES
+}
+
+function classicAllowedBlackIndices(exerciseId) {
+  if (exerciseId === 47) return CLASSIC_EX47_ALLOWED_BLACK_INDICES
+  if (exerciseId === 40 || exerciseId === 43) {
+    return CLASSIC_EX40_EX41_ALLOWED_BLACK_INDICES
+  }
+  if (exerciseId === 41 || exerciseId === 42) {
+    return CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
+  }
+  if (exerciseId >= 36 && exerciseId <= 39) {
+    return CLASSIC_EX36_EX37_ALLOWED_BLACK_INDICES
+  }
+  if (exerciseId >= 32 && exerciseId <= 35) {
+    return CLASSIC_EX32_ALLOWED_BLACK_INDICES
+  }
+  if (exerciseId >= 28 && exerciseId <= 31) {
+    return CLASSIC_EX28_ALLOWED_BLACK_INDICES
+  }
+  if (
+    exerciseId === 24 ||
+    exerciseId === 25 ||
+    exerciseId === 26 ||
+    exerciseId === 27 ||
+    exerciseId === 44 ||
+    exerciseId === 45 ||
+    exerciseId === 46
+  ) {
+    return CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
+  }
+  return null
+}
+
 const CLASSIC_INSTRUCTION_ROWS = [
   ['Notas C e D - 1 nota', 'uma nota (C e D)'],
   ['Notas C, D e E - 1 nota', 'uma nota (C, D e E)'],
@@ -193,9 +236,7 @@ export default function App() {
   const [exerciseComplete, setExerciseComplete] = useState(false)
   const [whiteFeedback, setWhiteFeedback] = useState({})
   const [blackFeedback, setBlackFeedback] = useState({})
-  /** Índice da branca → passo 1 ou 2 (revelação em erros com ordem fixa de dois sons). */
   const [orderedRevealSteps, setOrderedRevealSteps] = useState(null)
-  /** Índice em BLACK_KEYS → passo na revelação (ex. 25 com G#). */
   const [orderedRevealBlackSteps, setOrderedRevealBlackSteps] = useState(null)
 
   const [showCorrectNotice, setShowCorrectNotice] = useState(false)
@@ -212,24 +253,18 @@ export default function App() {
   })
 
   const frozenRef = useRef(false)
-  /** Após erro: revelações ficam até o utilizador carregar «Reproduzir áudio». */
   const wrongRevealAwaitingReplayRef = useRef(false)
   const exerciseCompleteRef = useRef(false)
   const gameModeRef = useRef(gameMode)
   const prevModeRef = useRef(gameMode)
   const classicExerciseIdRef = useRef(1)
   const answerPhaseRef = useRef(0)
-  /** Índice da primeira tecla certa em exercícios com dois sons e ordem fixa (MA/MD). */
   const exercise2FirstCorrectIndexRef = useRef(null)
-  /** Primeira nota correcta foi G#/Ab (ex. 25, 26, 27 e 41 MA), F#/Gb (ex. 29, 30 e 31), D#/Eb (ex. 33 MA, 34 MD e 35 H), C#/Db (ex. 37 MA, 38 MD e 39 H) ou A#/Bb (ex. 43 H). */
   const exercise2FirstCorrectBlackKeyRef = useRef(null)
   const streakRef = useRef(0)
-  /** Com streak < 10 no Ex. 1, 4, 8, 12, 16, 20, 24, 28, 32, 36 e 40: só b1–b7 (`low`) ou b8–b14 (`high`); renove-se a cada par de acertos e ao zerar a série. */
   const verificationHalfRef = useRef(null)
 
-  /** Incrementa sempre que uma nova rodada invalida playback em curso (`playRoundAudio` interrompido após awaits). */
   const roundPlaybackGenRef = useRef(0)
-  /** Cada novo clique em «Reproduzir áudio» invalida a invocação anterior (evita sobreposição em qualquer exercício). */
   const replayInvocationRef = useRef(0)
 
   const [playAudioHint, setPlayAudioHint] = useState(false)
@@ -250,7 +285,6 @@ export default function App() {
     streakRef.current = streak
   }, [streak])
 
-  /** Escolhe nota(s) e ficheiro(s); não reproduz som. */
   const pickNewRound = useCallback(() => {
     roundPlaybackGenRef.current += 1
     pauseAllNoteAudio()
@@ -3526,92 +3560,8 @@ export default function App() {
             onWhitePress={handleWhitePress}
             onBlackPress={handleBlackPress}
             disabled={classicDisabled}
-            allowedWhiteIndices={
-              classicExerciseId === 47
-                ? CLASSIC_DIMINISHED2_WHITE_INDICES
-                : classicExerciseId === 42 ||
-                  classicExerciseId === 44 ||
-                  classicExerciseId === 45 ||
-                  classicExerciseId === 46
-                  ? CLASSIC_DIMINISHED1_WHITE_INDICES
-                  : classicExerciseId === 20 ||
-                    classicExerciseId === 21 ||
-                    classicExerciseId === 22 ||
-                    classicExerciseId === 23 ||
-                    classicExerciseId === 24 ||
-                    classicExerciseId === 25 ||
-                    classicExerciseId === 26 ||
-                    classicExerciseId === 27 ||
-                    classicExerciseId === 28 ||
-                    classicExerciseId === 29 ||
-                    classicExerciseId === 30 ||
-                    classicExerciseId === 31 ||
-                    classicExerciseId === 32 ||
-                    classicExerciseId === 33 ||
-                    classicExerciseId === 34 ||
-                    classicExerciseId === 35 ||
-                    classicExerciseId === 36 ||
-                    classicExerciseId === 37 ||
-                    classicExerciseId === 38 ||
-                    classicExerciseId === 39 ||
-                    classicExerciseId === 40 ||
-                    classicExerciseId === 41 ||
-                    classicExerciseId === 43
-                    ? CLASSIC_CDEFGAB_WHITE_INDICES
-                    : classicExerciseId === 16 ||
-                      classicExerciseId === 17 ||
-                      classicExerciseId === 18 ||
-                      classicExerciseId === 19
-                      ? CLASSIC_CDEFGA_WHITE_INDICES
-                      : classicExerciseId === 12 ||
-                        classicExerciseId === 13 ||
-                        classicExerciseId === 14 ||
-                        classicExerciseId === 15
-                        ? CLASSIC_CDEFG_WHITE_INDICES
-                        : classicExerciseId === 8 ||
-                          classicExerciseId === 9 ||
-                          classicExerciseId === 10 ||
-                          classicExerciseId === 11
-                          ? CLASSIC_CDEF_WHITE_INDICES
-                          : classicExerciseId === 4 ||
-                            classicExerciseId === 5 ||
-                            classicExerciseId === 6 ||
-                            classicExerciseId === 7
-                            ? CLASSIC_CDE_WHITE_INDICES
-                            : CLASSIC_CD_WHITE_INDICES
-            }
-            allowedBlackIndices={
-              classicExerciseId === 47
-                ? CLASSIC_EX47_ALLOWED_BLACK_INDICES
-                : classicExerciseId === 40 || classicExerciseId === 43
-                  ? CLASSIC_EX40_EX41_ALLOWED_BLACK_INDICES
-                  : classicExerciseId === 41 || classicExerciseId === 42
-                    ? CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
-                    : classicExerciseId === 36 ||
-                      classicExerciseId === 37 ||
-                      classicExerciseId === 38 ||
-                      classicExerciseId === 39
-                      ? CLASSIC_EX36_EX37_ALLOWED_BLACK_INDICES
-                      : classicExerciseId === 32 ||
-                        classicExerciseId === 33 ||
-                        classicExerciseId === 34 ||
-                        classicExerciseId === 35
-                        ? CLASSIC_EX32_ALLOWED_BLACK_INDICES
-                        : classicExerciseId === 28 ||
-                          classicExerciseId === 29 ||
-                          classicExerciseId === 30 ||
-                          classicExerciseId === 31
-                          ? CLASSIC_EX28_ALLOWED_BLACK_INDICES
-                          : classicExerciseId === 24 ||
-                            classicExerciseId === 25 ||
-                            classicExerciseId === 26 ||
-                            classicExerciseId === 27 ||
-                            classicExerciseId === 44 ||
-                            classicExerciseId === 45 ||
-                            classicExerciseId === 46
-                            ? CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES
-                            : null
-            }
+            allowedWhiteIndices={classicAllowedWhiteIndices(classicExerciseId)}
+            allowedBlackIndices={classicAllowedBlackIndices(classicExerciseId)}
             blackFeedback={blackFeedback}
             disableBlackKeys={
               classicExerciseId !== 24 &&

@@ -24,13 +24,11 @@ export function audioFileForIndex(index) {
   return `b${index}-${NOTE_BY_INDEX[index]}.mp3`
 }
 
-/** Extrai a letra da nota de `b{n}-{Nota}.mp3` — deve coincidir com o som desse ficheiro. */
 export function classicAudioFileNoteLabel(filename) {
   const m = /^b\d+-([A-G])\.mp3$/i.exec(filename)
   return m ? m[1].toUpperCase() : ''
 }
 
-/** Áudios 1–7: primeira oitava; 8–14: segunda oitava. */
 export function octaveBandLabelForAudioIndex(index) {
   if (index >= 1 && index <= 7) return 'primeira oitava'
   if (index >= 8 && index <= 14) return 'segunda oitava'
@@ -41,14 +39,12 @@ export const ALL_CLASSIC_EXERCISE_AUDIO_FILES = EXERCISE_AUDIO_INDICES_LOW.map(
   (n) => audioFileForIndex(n),
 ).concat(EXERCISE_AUDIO_INDICES_HIGH.map((n) => audioFileForIndex(n)))
 
-/** Ex. 5 — pares em ordem MA no teclado: C–D, C–E, D–E (índices das brancas C=0, D=1, E=2). */
 export const EXERCISE_5_VALID_PAIRS = [
   [0, 1],
   [0, 2],
   [1, 2],
 ]
 
-/** Ex. 9 — mesma lógica com F: C–D, C–E, C–F, D–E, D–F, E–F (C=0…F=3). */
 export const EXERCISE_9_VALID_PAIRS = [
   [0, 1],
   [0, 2],
@@ -58,7 +54,6 @@ export const EXERCISE_9_VALID_PAIRS = [
   [2, 3],
 ]
 
-/** Ex. 13 — mesma lógica com G: todos os pares entre C e G (C=0…G=4). */
 export const EXERCISE_13_VALID_PAIRS = [
   [0, 1],
   [0, 2],
@@ -72,7 +67,6 @@ export const EXERCISE_13_VALID_PAIRS = [
   [3, 4],
 ]
 
-/** Ex. 17 (MA) / Ex. 18–19 — mesma lógica com A: todos os pares entre C e A (C=0…A=5 nas brancas da escala maior). */
 export const EXERCISE_18_VALID_PAIRS = [
   [0, 1],
   [0, 2],
@@ -91,7 +85,6 @@ export const EXERCISE_18_VALID_PAIRS = [
   [4, 5],
 ]
 
-/** Ex. 21 (MA) / Ex. 22–23 / Ex. 25 (branco–branco) — mesma lógica com B: todos os pares entre C e B (C=0…B=6). */
 export const EXERCISE_22_VALID_PAIRS = [
   [0, 1],
   [0, 2],
@@ -128,7 +121,6 @@ export const EXERCISE_44_DIMINISHED_PAIRS = [
   [3, 6], // F–B
 ]
 
-/** Especificação de uma rodada do Ex. 25 (MA): branco–branco ou branco–G# segundo a altura real. */
 const EXERCISE_25_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -146,7 +138,6 @@ const EXERCISE_25_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-/** Ex. 29 (MA): branco–branco ou branco–F# / F#–branco (F# entre F e G nas brancas). */
 const EXERCISE_29_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -164,7 +155,6 @@ const EXERCISE_29_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-/** Ex. 33 (MA): branco–branco ou branco–D# / D#–branco (D# entre D e E nas brancas). */
 const EXERCISE_33_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -182,7 +172,6 @@ const EXERCISE_33_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-/** Ex. 37 (MA): branco–branco ou branco–C# / C#–branco com todas as brancas. */
 const EXERCISE_37_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -200,7 +189,6 @@ const EXERCISE_37_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-/** Ex. 43 (H): branco–branco ou branco–A# / A#–branco com todas as brancas (só no 43; o 41 MA usa G#/Ab como o 25). */
 const EXERCISE_43_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -218,8 +206,6 @@ const EXERCISE_43_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-// Pares com G#/Ab: D–G#, F–G#, G#–B
-// D(1) e F(3) são graves em relação a G#; G#(preta) é grave em relação a B(6)
 const EXERCISE_42_MA_SPECS = EXERCISE_42_DIMINISHED_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -702,19 +688,15 @@ function pickOneNoteChoiceByTarget(choices, targetNote, streak) {
   )
 }
 
-/** Notas permitidas nos exercícios de uma só nota (áudio `b{n}-Nota.mp3`). */
 export const CLASSIC_ONE_NOTE_EX1_LABELS = ['C', 'D']
 export const CLASSIC_ONE_NOTE_EX4_LABELS = ['C', 'D', 'E']
 export const CLASSIC_ONE_NOTE_EX8_LABELS = ['C', 'D', 'E', 'F']
 export const CLASSIC_ONE_NOTE_EX12_LABELS = ['C', 'D', 'E', 'F', 'G']
 
-/** Ex. 16 — uma nota; mesmo critério de oitavas que o Ex. 12; notas do Ex. 13 com A acrescentado. */
 export const CLASSIC_ONE_NOTE_EX17_LABELS = ['C', 'D', 'E', 'F', 'G', 'A']
 
-/** Ex. 20 — uma nota; mesmo critério que o Ex. 16; notas do Ex. 16 com B acrescentado. */
 export const CLASSIC_ONE_NOTE_EX21_LABELS = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
 
-/** Ex. 42 (novo) — acorde diminuto 1: só D, F, G#/Ab, B; uma nota por rodada. */
 export const CLASSIC_ONE_NOTE_DIMINISHED1_WHITE_LABELS = ['D', 'F', 'B']
 
 export const CLASSIC_ONE_NOTE_EX42_LABELS = ['D', 'F', 'B']
@@ -722,31 +704,26 @@ export const CLASSIC_ONE_NOTE_EX42_LABELS = ['D', 'F', 'B']
 export const CLASSIC_ONE_NOTE_EX47_LABELS = ['C', 'A']
 
 
-/** Ex. 24 — G#/Ab; alvo interno sempre «G#»; o mesmo som que a tecla preta G#/Ab. */
 export const CLASSIC_ONE_NOTE_EX24_BLACK = {
   target: 'G#',
   audioFile: 'p4-Gsharp-Ab.mp3',
 }
 
-/** Ex. 28 — F#/Gb; alvo interno sempre «F#»; o mesmo som que a tecla preta F#/Gb. */
 export const CLASSIC_ONE_NOTE_EX28_BLACK = {
   target: 'F#',
   audioFile: 'p3-Fsharp-Gb.mp3',
 }
 
-/** Ex. 32 — D#/Eb; alvo interno sempre «D#»; o mesmo som que a tecla preta D#/Eb. */
 export const CLASSIC_ONE_NOTE_EX32_BLACK = {
   target: 'D#',
   audioFile: 'p2-Dsharp-Eb.mp3',
 }
 
-/** Ex. 36 — C#/Db; alvo interno sempre «C#»; o mesmo som que a tecla preta C#/Db. */
 export const CLASSIC_ONE_NOTE_EX36_BLACK = {
   target: 'C#',
   audioFile: 'p1-Csharp-Db.mp3',
 }
 
-/** Ex. 40 — A#/Bb; alvo interno sempre «A#»; o mesmo som que a tecla preta A#/Bb. */
 export const CLASSIC_ONE_NOTE_EX40_BLACK = {
   target: 'A#',
   audioFile: 'p5-Asharp-Bb.mp3',
@@ -944,7 +921,6 @@ export function exercise46PickRound(opts) {
   return exercise44PickRound(opts)
 }
 
-/** Lógica de oitava partilhada pelos exercícios MA de brancas (grave → agudo). */
 function pickTwoMaRoundFromPairs(validPairs, targetIndex, { streak }) {
   const pair = pickByVerificationTarget(
     validPairs,
