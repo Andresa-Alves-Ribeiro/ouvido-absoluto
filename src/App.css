@@ -4,9 +4,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: clamp(16px, 4vw, 40px);
-  gap: clamp(16px, 3vw, 28px);
+  width: 100%;
+  max-width: 42rem;
+  margin-inline: auto;
+  padding: clamp(12px, 4vw, 40px);
+  padding-top: max(clamp(12px, 4vw, 40px), env(safe-area-inset-top, 0px));
+  gap: clamp(12px, 3vw, 28px);
   text-align: center;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .app-muted {
@@ -25,11 +31,13 @@
 }
 
 .app-instructions {
+  width: 100%;
   max-width: 36rem;
   margin: 0;
-  line-height: 1.5;
-  color: white;
-  font-size: 24px;
+  line-height: 1.45;
+  color: var(--text-h);
+  font-size: clamp(1rem, 4.2vw, 1.5rem);
+  text-wrap: balance;
 }
 
 .app-counter {
@@ -192,11 +200,13 @@
 
 .app-ordered-reveal-hint {
   max-width: 32rem;
+  width: 100%;
   margin: 0;
-  font-size: 0.88rem;
+  font-size: clamp(0.82rem, 3.2vw, 0.88rem);
   line-height: 1.45;
   font-weight: 600;
   color: var(--text-h);
+  text-wrap: pretty;
 }
 
 .app-audio-actions {
@@ -227,21 +237,15 @@
 }
 
 /* —— Piano ——
- * Proporção real (ordem horizontal ≈ cabeço das brancas / profundidade frontal):
- * largura de ~7 × largura‑de‑uma‑branca está próxima do comprimento frontal da branca (~6× a largura de uma única tecla).
- * Largura total ≈ `--piano-row-h` × (7/6) para evitar «teclas largas e baixas».
+ * Proporção real: largura total ≈ 7 × largura de uma branca; altura ≈ 6,05 × largura de uma branca.
+ * Escala pela largura disponível (aspect-ratio) com teto em desktop.
  */
 .piano-board {
-  /* Profundidade aparente do teclado (brancas) — principal eixo vertical no layout */
-  --piano-row-h: clamp(210px, 34vmin, 380px);
-  /* Largura total da oitava ≈ profundidade × (7/6), próximo ao plano frontal de pianos acústicos */
-  --piano-octave-w: min(
-    calc(var(--piano-row-h) * (7 / 6.05)),
-    100%
-  );
+  --piano-max-h: 380px;
+  --piano-max-w: calc(var(--piano-max-h) * (7 / 6.05));
   box-sizing: border-box;
-  width: var(--piano-octave-w);
-  max-width: 100%;
+  width: 100%;
+  max-width: var(--piano-max-w);
   margin-top: clamp(8px, 2vw, 20px);
   margin-inline: auto;
 }
@@ -255,7 +259,9 @@
 .piano-whites {
   position: relative;
   display: flex;
-  height: var(--piano-row-h, clamp(210px, 34vmin, 380px));
+  width: 100%;
+  aspect-ratio: 7 / 6.05;
+  min-height: 130px;
   border: 2px solid #0f0f12;
   border-radius: 0 0 5px 5px;
   overflow: visible;
@@ -460,4 +466,67 @@
   border-radius: 4px;
   background: var(--code-bg);
   border: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .app-mode-tabs {
+    width: 100%;
+  }
+
+  .app-mode-tab {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .app-classic-exercise-row {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .app-classic-exercise-select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .app-audio-replay {
+    width: 100%;
+    max-width: 20rem;
+  }
+
+  .app-counter {
+    font-size: 0.88rem;
+    max-width: 100%;
+    text-wrap: balance;
+  }
+
+  .piano-black-label {
+    font-size: clamp(6px, 1.8vw, 10px);
+  }
+
+  .piano-black-slash {
+    display: none;
+  }
+
+  .piano-white-label {
+    bottom: 6px;
+    font-size: clamp(9px, 2.4vw, 13px);
+  }
+}
+
+@media (max-width: 380px) {
+  .app-title {
+    font-size: 1.25rem;
+  }
+
+  .app-instructions {
+    font-size: 0.95rem;
+  }
+
+  .piano-whites {
+    min-height: 115px;
+  }
 }

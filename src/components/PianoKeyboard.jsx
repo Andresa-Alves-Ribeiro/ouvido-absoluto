@@ -78,7 +78,6 @@ export function PianoKeyboard({
           })}
           <div className="piano-blacks" role="presentation">
             {BLACK_KEYS.map((k, i) => {
-              /* Centro na junção entre duas brancas; ~47% da largura de cada branca (≈ proporcao real ~11∶23 mm). */
               const leftPct = ((k.afterWhite + 1) / n) * 100
               const widthPct = (100 / n) * 0.47
               const clickable = blackClickable(i)
