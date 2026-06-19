@@ -46,6 +46,7 @@ import {
   exercise46PickRound,
   pickClassicOneNoteRoundEx47,
   pickClassicOneNoteRoundEx51,
+  pickClassicOneNoteRoundEx55,
   exercise48PickRound,
   exercise49PickRound,
   exercise50PickRound,
@@ -148,7 +149,8 @@ export function useClassicGame(gameMode) {
         classicExerciseIdRef.current === 40 ||
         classicExerciseIdRef.current === 42 ||
         classicExerciseIdRef.current === 47 ||
-        classicExerciseIdRef.current === 51
+        classicExerciseIdRef.current === 51 ||
+        classicExerciseIdRef.current === 55
       ) &&
       streakNow < 10 &&
       streakNow % 2 === 0
@@ -643,6 +645,11 @@ export function useClassicGame(gameMode) {
         audioFileLow: r.audioFileLow,
         audioFileHigh: r.audioFileHigh,
       }
+      return
+    }
+    if (classicExerciseIdRef.current === 55) {
+      const { target, audioFile } = pickClassicOneNoteRoundEx55(ctx)
+      roundRef.current = { kind: 'one', target, audioFile }
       return
     }
   }, [pauseAllNoteAudio])
@@ -1335,6 +1342,24 @@ export function useClassicGame(gameMode) {
                 exercise2FirstCorrectIndexRef.current = null
                 exercise2FirstCorrectBlackKeyRef.current = null
                 pickNewRound()
+              }, 650)
+              return next
+            }
+
+            if (
+              next >= VERIFICATION_TARGET &&
+              classicExerciseIdRef.current === 55
+            ) {
+              window.setTimeout(() => {
+                setExerciseComplete(true)
+                frozenRef.current = false
+                setShowCorrectNotice(false)
+                setWhiteFeedback({})
+                setBlackFeedback({})
+                clearRevealOrdering()
+                answerPhaseRef.current = 0
+                exercise2FirstCorrectIndexRef.current = null
+                exercise2FirstCorrectBlackKeyRef.current = null
               }, 650)
               return next
             }
@@ -2415,7 +2440,10 @@ export function useClassicGame(gameMode) {
               classicExerciseIdRef.current === 54
             ) {
               window.setTimeout(() => {
-                setExerciseComplete(true)
+                classicExerciseIdRef.current = 55
+                setClassicExerciseId(55)
+                rollVerificationHalf(verificationHalfRef)
+                setStreak(0)
                 frozenRef.current = false
                 setShowCorrectNotice(false)
                 setWhiteFeedback({})
@@ -2424,6 +2452,7 @@ export function useClassicGame(gameMode) {
                 answerPhaseRef.current = 0
                 exercise2FirstCorrectIndexRef.current = null
                 exercise2FirstCorrectBlackKeyRef.current = null
+                pickNewRound()
               }, 650)
               return next
             }
@@ -2480,7 +2509,10 @@ export function useClassicGame(gameMode) {
               classicExerciseIdRef.current === 54
             ) {
               window.setTimeout(() => {
-                setExerciseComplete(true)
+                classicExerciseIdRef.current = 55
+                setClassicExerciseId(55)
+                rollVerificationHalf(verificationHalfRef)
+                setStreak(0)
                 frozenRef.current = false
                 setShowCorrectNotice(false)
                 setWhiteFeedback({})
@@ -2489,6 +2521,7 @@ export function useClassicGame(gameMode) {
                 answerPhaseRef.current = 0
                 exercise2FirstCorrectIndexRef.current = null
                 exercise2FirstCorrectBlackKeyRef.current = null
+                pickNewRound()
               }, 650)
               return next
             }
@@ -3493,6 +3526,53 @@ export function useClassicGame(gameMode) {
         return
       }
 
+      if (classicExerciseIdRef.current === 55 && round.kind === 'one') {
+        const isGs = blackKeyIndex === gsharpIdx && round.target === 'G#'
+        const isDs = blackKeyIndex === dsharpIdx && round.target === 'D#'
+        const isFs = blackKeyIndex === fsharpIdx && round.target === 'F#'
+        if (!isGs && !isDs && !isFs) {
+          frozenRef.current = true
+          handleWrongAnswer()
+          return
+        }
+
+        frozenRef.current = true
+        setShowCorrectNotice(true)
+        setBlackFeedback({ [blackKeyIndex]: 'correct' })
+        setWhiteFeedback({})
+
+        setStreak((s) => {
+          const next = s + 1
+
+          if (next >= VERIFICATION_TARGET && classicExerciseIdRef.current === 55) {
+            window.setTimeout(() => {
+              setExerciseComplete(true)
+              frozenRef.current = false
+              setShowCorrectNotice(false)
+              setWhiteFeedback({})
+              setBlackFeedback({})
+              clearRevealOrdering()
+              answerPhaseRef.current = 0
+              exercise2FirstCorrectIndexRef.current = null
+              exercise2FirstCorrectBlackKeyRef.current = null
+            }, 650)
+            return next
+          }
+
+          window.setTimeout(() => {
+            frozenRef.current = false
+            setShowCorrectNotice(false)
+            setWhiteFeedback({})
+            setBlackFeedback({})
+            clearRevealOrdering()
+            if (gameModeRef.current === 'classic') pickNewRound()
+          }, 650)
+
+          return next
+        })
+        return
+      }
+
       if (
         classicExerciseIdRef.current === 52 &&
         round.kind === 'twoMa' &&
@@ -4003,7 +4083,10 @@ export function useClassicGame(gameMode) {
             classicExerciseIdRef.current === 54
           ) {
             window.setTimeout(() => {
-              setExerciseComplete(true)
+              classicExerciseIdRef.current = 55
+              setClassicExerciseId(55)
+              rollVerificationHalf(verificationHalfRef)
+              setStreak(0)
               frozenRef.current = false
               setShowCorrectNotice(false)
               setWhiteFeedback({})
@@ -4012,6 +4095,7 @@ export function useClassicGame(gameMode) {
               answerPhaseRef.current = 0
               exercise2FirstCorrectIndexRef.current = null
               exercise2FirstCorrectBlackKeyRef.current = null
+              pickNewRound()
             }, 650)
             return next
           }
@@ -4038,13 +4122,14 @@ export function useClassicGame(gameMode) {
           classicExerciseIdRef.current === 29 ||
           classicExerciseIdRef.current === 33 ||
           classicExerciseIdRef.current === 37 ||
-          classicExerciseIdRef.current === 41) &&
+          classicExerciseIdRef.current === 41 ||
+          classicExerciseIdRef.current === 44) &&
         round.kind === 'twoMa' &&
         round.exercise25Slots
       ) {
         const id = classicExerciseIdRef.current
         const blackKind =
-          id === 25 || id === 41
+          id === 25 || id === 41 || id === 44
             ? 'gsharp'
             : id === 29
               ? 'fsharp'
@@ -4052,7 +4137,7 @@ export function useClassicGame(gameMode) {
                 ? 'csharp'
                 : 'dsharp'
         const wantSharpIdx =
-          id === 25 || id === 41
+          id === 25 || id === 41 || id === 44
             ? gsharpIdx
             : id === 29
               ? fsharpIdx
@@ -4411,7 +4496,8 @@ export function useClassicGame(gameMode) {
           classicExerciseIdRef.current === 31 ||
           classicExerciseIdRef.current === 35 ||
           classicExerciseIdRef.current === 39 ||
-          classicExerciseIdRef.current === 43) &&
+          classicExerciseIdRef.current === 43 ||
+          classicExerciseIdRef.current === 46) &&
         round.kind === 'twoH' &&
         round.exercise25Slots
       ) {

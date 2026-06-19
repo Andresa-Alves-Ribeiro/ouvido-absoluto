@@ -8,6 +8,8 @@ function stopEvent(e) {
 /**
  * @param {Record<number, 'correct' | 'reveal'>} [whiteFeedback]
  * @param {Record<number, number>} [whiteRevealOrder] Índice da branca → ordem (1, 2…) na revelação de erro
+ * @param {Record<number, 'correct' | 'reveal'>} [blackFeedback]
+ * @param {Record<number, number>} [blackRevealOrder] Índice da preta → ordem (1, 2…) na revelação de erro
  * @param {(index: number, label: string) => void} [onWhitePress]
  * @param {(blackKeyIndex: number) => void} [onBlackPress]
  * @param {boolean} [disabled]
@@ -18,6 +20,8 @@ function stopEvent(e) {
 export function PianoKeyboard({
   whiteFeedback = {},
   whiteRevealOrder = {},
+  blackFeedback = {},
+  blackRevealOrder = {},
   onWhitePress,
   onBlackPress,
   disabled = false,
@@ -82,11 +86,16 @@ export function PianoKeyboard({
               const widthPct = (100 / n) * 0.47
               const clickable = blackClickable(i)
               const blackDisabled = disabled || !clickable
+              const fb = blackFeedback[i]
+              const orderStep = blackRevealOrder[i]
+              const cls = ['piano-black']
+              if (fb === 'correct') cls.push('is-feedback-correct')
+              if (fb === 'reveal') cls.push('is-feedback-reveal')
               return (
                 <button
                   key={`b-${i}-${k.afterWhite}`}
                   type="button"
-                  className="piano-black"
+                  className={cls.join(' ')}
                   style={{
                     left: `${leftPct}%`,
                     width: `${widthPct}%`,
@@ -100,6 +109,11 @@ export function PianoKeyboard({
                     onBlackPress?.(i)
                   }}
                 >
+                  {orderStep != null && fb === 'reveal' ? (
+                    <span className="piano-black-order" aria-hidden="true">
+                      {orderStep}
+                    </span>
+                  ) : null}
                   <span className="piano-black-label">
                     <span>{k.sharp}</span>
                     <span className="piano-black-slash">/</span>

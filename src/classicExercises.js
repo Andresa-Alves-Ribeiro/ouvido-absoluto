@@ -843,6 +843,8 @@ export const CLASSIC_ONE_NOTE_EX42_LABELS = ['D', 'F', 'B']
 
 export const CLASSIC_ONE_NOTE_EX47_LABELS = ['C', 'A']
 
+export const CLASSIC_ONE_NOTE_EX55_LABELS = ['C', 'D', 'F', 'A', 'B']
+
 export const CLASSIC_ONE_NOTE_EX51_LABELS = ['E', 'G']
 
 
@@ -996,6 +998,26 @@ export function pickClassicOneNoteRoundEx47({ streak, half }) {
   const picked = pickOneNoteChoiceByTarget(
     allChoices,
     CLASSIC_ONE_NOTE_EX32_BLACK.target,
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+export function pickClassicOneNoteRoundEx55({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX55_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices
+    .concat([CLASSIC_ONE_NOTE_EX24_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX32_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX28_BLACK])
+  const picked = pickByVerificationTarget(
+    allChoices,
+    (choice) =>
+      choice.target === 'G#' ||
+      choice.target === 'D#' ||
+      choice.target === 'F#',
     streak,
   )
   return { target: picked.target, audioFile: picked.audioFile }
