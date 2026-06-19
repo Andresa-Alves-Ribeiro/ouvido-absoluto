@@ -47,6 +47,7 @@ import {
   pickClassicOneNoteRoundEx47,
   pickClassicOneNoteRoundEx51,
   pickClassicOneNoteRoundEx55,
+  pickClassicOneNoteRoundEx59,
   exercise48PickRound,
   exercise49PickRound,
   exercise50PickRound,
@@ -56,6 +57,9 @@ import {
   exercise56PickRound,
   exercise57PickRound,
   exercise58PickRound,
+  exercise60PickRound,
+  exercise61PickRound,
+  exercise62PickRound,
 } from '../classicExercises.js'
 import {
   VERIFICATION_TARGET,
@@ -153,7 +157,8 @@ export function useClassicGame(gameMode) {
         classicExerciseIdRef.current === 42 ||
         classicExerciseIdRef.current === 47 ||
         classicExerciseIdRef.current === 51 ||
-        classicExerciseIdRef.current === 55
+        classicExerciseIdRef.current === 55 ||
+        classicExerciseIdRef.current === 59
       ) &&
       streakNow < 10 &&
       streakNow % 2 === 0
@@ -677,6 +682,41 @@ export function useClassicGame(gameMode) {
     }
     if (classicExerciseIdRef.current === 58) {
       const r = exercise58PickRound(ctx)
+      roundRef.current = {
+        kind: 'twoH',
+        exercise25Slots: { slot0: r.slot0, slot1: r.slot1 },
+        audioFileLow: r.audioFileLow,
+        audioFileHigh: r.audioFileHigh,
+      }
+      return
+    }
+    if (classicExerciseIdRef.current === 59) {
+      const { target, audioFile } = pickClassicOneNoteRoundEx59(ctx)
+      roundRef.current = { kind: 'one', target, audioFile }
+      return
+    }
+    if (classicExerciseIdRef.current === 60) {
+      const r = exercise60PickRound(ctx)
+      roundRef.current = {
+        kind: 'twoMa',
+        exercise25Slots: { slot0: r.slot0, slot1: r.slot1 },
+        audioFileLow: r.audioFileLow,
+        audioFileHigh: r.audioFileHigh,
+      }
+      return
+    }
+    if (classicExerciseIdRef.current === 61) {
+      const r = exercise61PickRound(ctx)
+      roundRef.current = {
+        kind: 'twoMd',
+        exercise25Slots: { slot0: r.slot0, slot1: r.slot1 },
+        audioFileLow: r.audioFileLow,
+        audioFileHigh: r.audioFileHigh,
+      }
+      return
+    }
+    if (classicExerciseIdRef.current === 62) {
+      const r = exercise62PickRound(ctx)
       roundRef.current = {
         kind: 'twoH',
         exercise25Slots: { slot0: r.slot0, slot1: r.slot1 },
@@ -1401,6 +1441,28 @@ export function useClassicGame(gameMode) {
               return next
             }
 
+            if (
+              next >= VERIFICATION_TARGET &&
+              classicExerciseIdRef.current === 59
+            ) {
+              window.setTimeout(() => {
+                classicExerciseIdRef.current = 60
+                setClassicExerciseId(60)
+                rollVerificationHalf(verificationHalfRef)
+                setStreak(0)
+                frozenRef.current = false
+                setShowCorrectNotice(false)
+                setWhiteFeedback({})
+                setBlackFeedback({})
+                clearRevealOrdering()
+                answerPhaseRef.current = 0
+                exercise2FirstCorrectIndexRef.current = null
+                exercise2FirstCorrectBlackKeyRef.current = null
+                pickNewRound()
+              }, 650)
+              return next
+            }
+
             window.setTimeout(() => {
               frozenRef.current = false
               setShowCorrectNotice(false)
@@ -1431,7 +1493,8 @@ export function useClassicGame(gameMode) {
             classicExerciseIdRef.current === 46 ||
             classicExerciseIdRef.current === 50 ||
             classicExerciseIdRef.current === 54 ||
-            classicExerciseIdRef.current === 58)
+            classicExerciseIdRef.current === 58 ||
+            classicExerciseIdRef.current === 62)
         ) {
           const { slot0, slot1 } = round.exercise25Slots
           const whiteMatches = (slot, idx) =>
@@ -1647,6 +1710,28 @@ export function useClassicGame(gameMode) {
               if (
                 next >= VERIFICATION_TARGET &&
                 classicExerciseIdRef.current === 58
+              ) {
+                window.setTimeout(() => {
+                  classicExerciseIdRef.current = 59
+                  setClassicExerciseId(59)
+                  rollVerificationHalf(verificationHalfRef)
+                  setStreak(0)
+                  frozenRef.current = false
+                  setShowCorrectNotice(false)
+                  setWhiteFeedback({})
+                  setBlackFeedback({})
+                  clearRevealOrdering()
+                  answerPhaseRef.current = 0
+                  exercise2FirstCorrectIndexRef.current = null
+                  exercise2FirstCorrectBlackKeyRef.current = null
+                  pickNewRound()
+                }, 650)
+                return next
+              }
+
+              if (
+                next >= VERIFICATION_TARGET &&
+                classicExerciseIdRef.current === 62
               ) {
                 window.setTimeout(() => {
                   setExerciseComplete(true)
@@ -1884,6 +1969,28 @@ export function useClassicGame(gameMode) {
               if (
                 next >= VERIFICATION_TARGET &&
                 classicExerciseIdRef.current === 58
+              ) {
+                window.setTimeout(() => {
+                  classicExerciseIdRef.current = 59
+                  setClassicExerciseId(59)
+                  rollVerificationHalf(verificationHalfRef)
+                  setStreak(0)
+                  frozenRef.current = false
+                  setShowCorrectNotice(false)
+                  setWhiteFeedback({})
+                  setBlackFeedback({})
+                  clearRevealOrdering()
+                  answerPhaseRef.current = 0
+                  exercise2FirstCorrectIndexRef.current = null
+                  exercise2FirstCorrectBlackKeyRef.current = null
+                  pickNewRound()
+                }, 650)
+                return next
+              }
+
+              if (
+                next >= VERIFICATION_TARGET &&
+                classicExerciseIdRef.current === 62
               ) {
                 window.setTimeout(() => {
                   setExerciseComplete(true)
@@ -2132,6 +2239,192 @@ export function useClassicGame(gameMode) {
             window.setTimeout(() => {
               classicExerciseIdRef.current = 49
               setClassicExerciseId(49)
+              rollVerificationHalf(verificationHalfRef)
+              setStreak(0)
+              frozenRef.current = false
+              setShowCorrectNotice(false)
+              setWhiteFeedback({})
+              setBlackFeedback({})
+              clearRevealOrdering()
+              answerPhaseRef.current = 0
+              exercise2FirstCorrectIndexRef.current = null
+              exercise2FirstCorrectBlackKeyRef.current = null
+              pickNewRound()
+            }, 650)
+            return next
+          }
+
+          window.setTimeout(() => {
+            frozenRef.current = false
+            setShowCorrectNotice(false)
+            setWhiteFeedback({})
+            setBlackFeedback({})
+            clearRevealOrdering()
+            answerPhaseRef.current = 0
+            exercise2FirstCorrectIndexRef.current = null
+            exercise2FirstCorrectBlackKeyRef.current = null
+            if (gameModeRef.current === 'classic') pickNewRound()
+          }, 650)
+
+          return next
+        })
+        return
+      }
+
+      /* Exercício 60 — MA diminutos 1 e 3: C#/Db, D, E, F, G, G#/Ab, A#/Bb, B (três pretas). */
+      if (
+        classicExerciseIdRef.current === 60 &&
+        round.kind === 'twoMa' &&
+        round.exercise25Slots
+      ) {
+        const { slot0, slot1 } = round.exercise25Slots
+        const isDim13Black = (kind) =>
+          kind === 'gsharp' || kind === 'csharp' || kind === 'asharp'
+
+        if (answerPhaseRef.current === 0) {
+          if (isDim13Black(slot0.kind)) {
+            frozenRef.current = true
+            handleWrongAnswer()
+            return
+          }
+          if (slot0.kind !== 'white' || index !== slot0.index) {
+            frozenRef.current = true
+            handleWrongAnswer()
+            return
+          }
+          answerPhaseRef.current = 1
+          exercise2FirstCorrectIndexRef.current = index
+          exercise2FirstCorrectBlackKeyRef.current = null
+          setWhiteFeedback({ [index]: 'correct' })
+          setBlackFeedback({})
+          setShowCorrectNotice(false)
+          return
+        }
+
+        frozenRef.current = true
+        if (isDim13Black(slot1.kind)) {
+          handleWrongAnswer()
+          return
+        }
+        if (slot1.kind !== 'white' || index !== slot1.index) {
+          handleWrongAnswer()
+          return
+        }
+
+        const firstIdx = exercise2FirstCorrectIndexRef.current
+        const firstBlackBi = exercise2FirstCorrectBlackKeyRef.current
+        setShowCorrectNotice(true)
+        setWhiteFeedback({
+          ...(firstIdx !== null ? { [firstIdx]: 'correct' } : {}),
+          [index]: 'correct',
+        })
+        setBlackFeedback(
+          firstBlackBi !== null ? { [firstBlackBi]: 'correct' } : {},
+        )
+
+        setStreak((s) => {
+          const next = s + 1
+
+          if (
+            next >= VERIFICATION_TARGET &&
+            classicExerciseIdRef.current === 60
+          ) {
+            window.setTimeout(() => {
+              classicExerciseIdRef.current = 61
+              setClassicExerciseId(61)
+              rollVerificationHalf(verificationHalfRef)
+              setStreak(0)
+              frozenRef.current = false
+              setShowCorrectNotice(false)
+              setWhiteFeedback({})
+              setBlackFeedback({})
+              clearRevealOrdering()
+              answerPhaseRef.current = 0
+              exercise2FirstCorrectIndexRef.current = null
+              exercise2FirstCorrectBlackKeyRef.current = null
+              pickNewRound()
+            }, 650)
+            return next
+          }
+
+          window.setTimeout(() => {
+            frozenRef.current = false
+            setShowCorrectNotice(false)
+            setWhiteFeedback({})
+            setBlackFeedback({})
+            clearRevealOrdering()
+            answerPhaseRef.current = 0
+            exercise2FirstCorrectIndexRef.current = null
+            exercise2FirstCorrectBlackKeyRef.current = null
+            if (gameModeRef.current === 'classic') pickNewRound()
+          }, 650)
+
+          return next
+        })
+        return
+      }
+
+      /* Exercício 61 — MD diminutos 1 e 3: C#/Db, D, E, F, G, G#/Ab, A#/Bb, B (três pretas). */
+      if (
+        classicExerciseIdRef.current === 61 &&
+        round.kind === 'twoMd' &&
+        round.exercise25Slots
+      ) {
+        const { slot0, slot1 } = round.exercise25Slots
+        const isDim13Black = (kind) =>
+          kind === 'gsharp' || kind === 'csharp' || kind === 'asharp'
+
+        if (answerPhaseRef.current === 0) {
+          if (isDim13Black(slot1.kind)) {
+            frozenRef.current = true
+            handleWrongAnswer()
+            return
+          }
+          if (slot1.kind !== 'white' || index !== slot1.index) {
+            frozenRef.current = true
+            handleWrongAnswer()
+            return
+          }
+          answerPhaseRef.current = 1
+          exercise2FirstCorrectIndexRef.current = index
+          exercise2FirstCorrectBlackKeyRef.current = null
+          setWhiteFeedback({ [index]: 'correct' })
+          setBlackFeedback({})
+          setShowCorrectNotice(false)
+          return
+        }
+
+        frozenRef.current = true
+        if (isDim13Black(slot0.kind)) {
+          handleWrongAnswer()
+          return
+        }
+        if (slot0.kind !== 'white' || index !== slot0.index) {
+          handleWrongAnswer()
+          return
+        }
+
+        const firstIdx = exercise2FirstCorrectIndexRef.current
+        const firstBlackBi = exercise2FirstCorrectBlackKeyRef.current
+        setShowCorrectNotice(true)
+        setWhiteFeedback({
+          ...(firstIdx !== null ? { [firstIdx]: 'correct' } : {}),
+          [index]: 'correct',
+        })
+        setBlackFeedback(
+          firstBlackBi !== null ? { [firstBlackBi]: 'correct' } : {},
+        )
+
+        setStreak((s) => {
+          const next = s + 1
+
+          if (
+            next >= VERIFICATION_TARGET &&
+            classicExerciseIdRef.current === 61
+          ) {
+            window.setTimeout(() => {
+              classicExerciseIdRef.current = 62
+              setClassicExerciseId(62)
               rollVerificationHalf(verificationHalfRef)
               setStreak(0)
               frozenRef.current = false
@@ -3655,6 +3948,231 @@ export function useClassicGame(gameMode) {
         return
       }
 
+      if (classicExerciseIdRef.current === 59 && round.kind === 'one') {
+        const isGs = blackKeyIndex === gsharpIdx && round.target === 'G#'
+        const isCs = blackKeyIndex === csharpIdx && round.target === 'C#'
+        const isAs = blackKeyIndex === asharpIdx && round.target === 'A#'
+        if (!isGs && !isCs && !isAs) {
+          frozenRef.current = true
+          handleWrongAnswer()
+          return
+        }
+
+        frozenRef.current = true
+        setShowCorrectNotice(true)
+        setBlackFeedback({ [blackKeyIndex]: 'correct' })
+        setWhiteFeedback({})
+
+        setStreak((s) => {
+          const next = s + 1
+
+          if (next >= VERIFICATION_TARGET && classicExerciseIdRef.current === 59) {
+            window.setTimeout(() => {
+              classicExerciseIdRef.current = 60
+              setClassicExerciseId(60)
+              rollVerificationHalf(verificationHalfRef)
+              setStreak(0)
+              frozenRef.current = false
+              setShowCorrectNotice(false)
+              setWhiteFeedback({})
+              setBlackFeedback({})
+              clearRevealOrdering()
+              answerPhaseRef.current = 0
+              exercise2FirstCorrectIndexRef.current = null
+              exercise2FirstCorrectBlackKeyRef.current = null
+              pickNewRound()
+            }, 650)
+            return next
+          }
+
+          window.setTimeout(() => {
+            frozenRef.current = false
+            setShowCorrectNotice(false)
+            setWhiteFeedback({})
+            setBlackFeedback({})
+            clearRevealOrdering()
+            if (gameModeRef.current === 'classic') pickNewRound()
+          }, 650)
+
+          return next
+        })
+        return
+      }
+
+      if (
+        classicExerciseIdRef.current === 60 &&
+        round.kind === 'twoMa' &&
+        round.exercise25Slots
+      ) {
+        const { slot0, slot1 } = round.exercise25Slots
+        const slotBlackIdx = (slot) =>
+          slot.kind === 'gsharp'
+            ? gsharpIdx
+            : slot.kind === 'csharp'
+              ? csharpIdx
+              : slot.kind === 'asharp'
+                ? asharpIdx
+                : -1
+        const activeSlot = answerPhaseRef.current === 0 ? slot0 : slot1
+        const expectedIdx = slotBlackIdx(activeSlot)
+
+        if (expectedIdx < 0 || blackKeyIndex !== expectedIdx) {
+          frozenRef.current = true
+          handleWrongAnswer()
+          return
+        }
+
+        if (answerPhaseRef.current === 0) {
+          answerPhaseRef.current = 1
+          exercise2FirstCorrectIndexRef.current = null
+          exercise2FirstCorrectBlackKeyRef.current = blackKeyIndex
+          setBlackFeedback({ [blackKeyIndex]: 'correct' })
+          setWhiteFeedback({})
+          setShowCorrectNotice(false)
+          return
+        }
+
+        frozenRef.current = true
+        const firstBi = exercise2FirstCorrectBlackKeyRef.current
+        const firstWi = exercise2FirstCorrectIndexRef.current
+        setShowCorrectNotice(true)
+        setBlackFeedback({
+          ...(firstBi !== null ? { [firstBi]: 'correct' } : {}),
+          [blackKeyIndex]: 'correct',
+        })
+        setWhiteFeedback(
+          firstWi !== null ? { [firstWi]: 'correct' } : {},
+        )
+
+        setStreak((s) => {
+          const next = s + 1
+
+          if (
+            next >= VERIFICATION_TARGET &&
+            classicExerciseIdRef.current === 60
+          ) {
+            window.setTimeout(() => {
+              classicExerciseIdRef.current = 61
+              setClassicExerciseId(61)
+              rollVerificationHalf(verificationHalfRef)
+              setStreak(0)
+              frozenRef.current = false
+              setShowCorrectNotice(false)
+              setWhiteFeedback({})
+              setBlackFeedback({})
+              clearRevealOrdering()
+              answerPhaseRef.current = 0
+              exercise2FirstCorrectIndexRef.current = null
+              exercise2FirstCorrectBlackKeyRef.current = null
+              pickNewRound()
+            }, 650)
+            return next
+          }
+
+          window.setTimeout(() => {
+            frozenRef.current = false
+            setShowCorrectNotice(false)
+            setWhiteFeedback({})
+            setBlackFeedback({})
+            clearRevealOrdering()
+            answerPhaseRef.current = 0
+            exercise2FirstCorrectIndexRef.current = null
+            exercise2FirstCorrectBlackKeyRef.current = null
+            if (gameModeRef.current === 'classic') pickNewRound()
+          }, 650)
+
+          return next
+        })
+        return
+      }
+
+      if (
+        classicExerciseIdRef.current === 61 &&
+        round.kind === 'twoMd' &&
+        round.exercise25Slots
+      ) {
+        const { slot0, slot1 } = round.exercise25Slots
+        const slotBlackIdx = (slot) =>
+          slot.kind === 'gsharp'
+            ? gsharpIdx
+            : slot.kind === 'csharp'
+              ? csharpIdx
+              : slot.kind === 'asharp'
+                ? asharpIdx
+                : -1
+        const activeSlot = answerPhaseRef.current === 0 ? slot1 : slot0
+        const expectedIdx = slotBlackIdx(activeSlot)
+
+        if (expectedIdx < 0 || blackKeyIndex !== expectedIdx) {
+          frozenRef.current = true
+          handleWrongAnswer()
+          return
+        }
+
+        if (answerPhaseRef.current === 0) {
+          answerPhaseRef.current = 1
+          exercise2FirstCorrectIndexRef.current = null
+          exercise2FirstCorrectBlackKeyRef.current = blackKeyIndex
+          setBlackFeedback({ [blackKeyIndex]: 'correct' })
+          setWhiteFeedback({})
+          setShowCorrectNotice(false)
+          return
+        }
+
+        frozenRef.current = true
+        const firstBi = exercise2FirstCorrectBlackKeyRef.current
+        const firstWi = exercise2FirstCorrectIndexRef.current
+        setShowCorrectNotice(true)
+        setBlackFeedback({
+          ...(firstBi !== null ? { [firstBi]: 'correct' } : {}),
+          [blackKeyIndex]: 'correct',
+        })
+        setWhiteFeedback(
+          firstWi !== null ? { [firstWi]: 'correct' } : {},
+        )
+
+        setStreak((s) => {
+          const next = s + 1
+
+          if (
+            next >= VERIFICATION_TARGET &&
+            classicExerciseIdRef.current === 61
+          ) {
+            window.setTimeout(() => {
+              classicExerciseIdRef.current = 62
+              setClassicExerciseId(62)
+              rollVerificationHalf(verificationHalfRef)
+              setStreak(0)
+              frozenRef.current = false
+              setShowCorrectNotice(false)
+              setWhiteFeedback({})
+              setBlackFeedback({})
+              clearRevealOrdering()
+              answerPhaseRef.current = 0
+              exercise2FirstCorrectIndexRef.current = null
+              exercise2FirstCorrectBlackKeyRef.current = null
+              pickNewRound()
+            }, 650)
+            return next
+          }
+
+          window.setTimeout(() => {
+            frozenRef.current = false
+            setShowCorrectNotice(false)
+            setWhiteFeedback({})
+            setBlackFeedback({})
+            clearRevealOrdering()
+            answerPhaseRef.current = 0
+            exercise2FirstCorrectIndexRef.current = null
+            exercise2FirstCorrectBlackKeyRef.current = null
+            if (gameModeRef.current === 'classic') pickNewRound()
+          }, 650)
+
+          return next
+        })
+        return
+      }
+
       if (
         classicExerciseIdRef.current === 56 &&
         round.kind === 'twoMa' &&
@@ -4552,14 +5070,15 @@ export function useClassicGame(gameMode) {
           classicExerciseIdRef.current === 46 ||
           classicExerciseIdRef.current === 50 ||
           classicExerciseIdRef.current === 54 ||
-          classicExerciseIdRef.current === 58) &&
+          classicExerciseIdRef.current === 58 ||
+          classicExerciseIdRef.current === 62) &&
         round.kind === 'twoH' &&
         round.exercise25Slots
       ) {
         const idH = classicExerciseIdRef.current
         const { slot0, slot1 } = round.exercise25Slots
         const isDiminishedHarmonic =
-          idH === 46 || idH === 50 || idH === 54 || idH === 58
+          idH === 46 || idH === 50 || idH === 54 || idH === 58 || idH === 62
 
         if (isDiminishedHarmonic) {
           const slotBlackIdx = (slot) =>
@@ -4878,6 +5397,28 @@ export function useClassicGame(gameMode) {
           if (
             next >= VERIFICATION_TARGET &&
             classicExerciseIdRef.current === 58
+          ) {
+            window.setTimeout(() => {
+              classicExerciseIdRef.current = 59
+              setClassicExerciseId(59)
+              rollVerificationHalf(verificationHalfRef)
+              setStreak(0)
+              frozenRef.current = false
+              setShowCorrectNotice(false)
+              setWhiteFeedback({})
+              setBlackFeedback({})
+              clearRevealOrdering()
+              answerPhaseRef.current = 0
+              exercise2FirstCorrectIndexRef.current = null
+              exercise2FirstCorrectBlackKeyRef.current = null
+              pickNewRound()
+            }, 650)
+            return next
+          }
+
+          if (
+            next >= VERIFICATION_TARGET &&
+            classicExerciseIdRef.current === 62
           ) {
             window.setTimeout(() => {
               setExerciseComplete(true)

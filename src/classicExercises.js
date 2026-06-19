@@ -289,6 +289,96 @@ const EXERCISE_56_MA_SPECS = EXERCISE_56_DIMINISHED_PAIRS.map((pair) => ({
   .concat([3, 5, 6].map((w) => ({ type: 'da', w })))
   .concat([5, 6].map((w) => ({ type: 'fa', w })))
 
+export const EXERCISE_60_DIMINISHED_PAIRS = [
+  [1, 2], // D–E
+  [1, 3], // D–F
+  [1, 4], // D–G
+  [1, 6], // D–B
+  [2, 3], // E–F
+  [2, 4], // E–G
+  [2, 6], // E–B
+  [3, 4], // F–G
+  [3, 6], // F–B
+  [4, 6], // G–B
+]
+
+const EXERCISE_60_MA_SPECS = EXERCISE_60_DIMINISHED_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat([1, 2, 3].map((w) => ({ type: 'wg', w })))
+  .concat([6].map((w) => ({ type: 'gw', w })))
+  .concat([1, 2, 3, 4, 6].map((w) => ({ type: 'ce', w })))
+  .concat([1, 2, 3, 4].map((w) => ({ type: 'wa', w })))
+
+export function exercise62PickRound(opts) {
+  return exercise60PickRound(opts)
+}
+
+export function exercise61PickRound(opts) {
+  return exercise60PickRound(opts)
+}
+
+export function exercise60PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_60_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const gsharpFile = CLASSIC_ONE_NOTE_EX24_BLACK.audioFile
+  const csharpFile = CLASSIC_ONE_NOTE_EX36_BLACK.audioFile
+  const asharpFile = CLASSIC_ONE_NOTE_EX40_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wg') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: gsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'gsharp' },
+    }
+  }
+  if (spec.type === 'gw') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: gsharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'gsharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  if (spec.type === 'ce') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: csharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'csharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+  return {
+    audioFileLow: audioFileForIndex(iWhite),
+    audioFileHigh: asharpFile,
+    slot0: { kind: 'white', index: w },
+    slot1: { kind: 'asharp' },
+  }
+}
+
 export function exercise58PickRound(opts) {
   return exercise56PickRound(opts)
 }
@@ -955,6 +1045,8 @@ export const CLASSIC_ONE_NOTE_EX42_LABELS = ['D', 'F', 'B']
 
 export const CLASSIC_ONE_NOTE_EX47_LABELS = ['C', 'A']
 
+export const CLASSIC_ONE_NOTE_EX59_LABELS = ['D', 'E', 'F', 'G', 'B']
+
 export const CLASSIC_ONE_NOTE_EX55_LABELS = ['C', 'D', 'F', 'A', 'B']
 
 export const CLASSIC_ONE_NOTE_EX51_LABELS = ['E', 'G']
@@ -1110,6 +1202,26 @@ export function pickClassicOneNoteRoundEx47({ streak, half }) {
   const picked = pickOneNoteChoiceByTarget(
     allChoices,
     CLASSIC_ONE_NOTE_EX32_BLACK.target,
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+export function pickClassicOneNoteRoundEx59({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX59_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices
+    .concat([CLASSIC_ONE_NOTE_EX24_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX36_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX40_BLACK])
+  const picked = pickByVerificationTarget(
+    allChoices,
+    (choice) =>
+      choice.target === 'G#' ||
+      choice.target === 'C#' ||
+      choice.target === 'A#',
     streak,
   )
   return { target: picked.target, audioFile: picked.audioFile }
