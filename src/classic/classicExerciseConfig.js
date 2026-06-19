@@ -10,6 +10,7 @@ const CLASSIC_CDEFGA_WHITE_INDICES = new Set([0, 1, 2, 3, 4, 5])
 const CLASSIC_CDEFGAB_WHITE_INDICES = new Set([0, 1, 2, 3, 4, 5, 6])
 const CLASSIC_DIMINISHED1_WHITE_INDICES = new Set([1, 3, 6])
 const CLASSIC_DIMINISHED2_WHITE_INDICES = new Set([0, 5])
+const CLASSIC_DIMINISHED3_WHITE_INDICES = new Set([2, 4])
 
 const CLASSIC_EX24_EX25_ALLOWED_BLACK_INDICES = new Set([
   BLACK_KEYS.findIndex((k) => k.sharp === 'G#'),
@@ -36,6 +37,11 @@ const CLASSIC_EX47_ALLOWED_BLACK_INDICES = new Set([
   BLACK_KEYS.findIndex((k) => k.sharp === 'F#'),
 ])
 
+const CLASSIC_EX51_ALLOWED_BLACK_INDICES = new Set([
+  BLACK_KEYS.findIndex((k) => k.sharp === 'C#'),
+  BLACK_KEYS.findIndex((k) => k.sharp === 'A#'),
+])
+
 export const BETWEEN_NOTES_MS = 1000
 
 export function rollVerificationHalf(halfRef) {
@@ -50,7 +56,7 @@ export function delay(ms) {
 
 export const CLASSIC_EXERCISE_IDS_IN_ORDER = [
   1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-  24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 42, 44, 45, 46, 47
+  24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 42, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54
 ]
 
 export const CLASSIC_EXERCISE_COUNT = CLASSIC_EXERCISE_IDS_IN_ORDER.length
@@ -65,7 +71,12 @@ export function classicExerciseDisplayNumber(internalId) {
 }
 
 export function classicAllowedWhiteIndices(exerciseId) {
-  if (exerciseId === 47) return CLASSIC_DIMINISHED2_WHITE_INDICES
+  if (exerciseId === 51 || exerciseId === 52 || exerciseId === 53 || exerciseId === 54) {
+    return CLASSIC_DIMINISHED3_WHITE_INDICES
+  }
+  if (exerciseId === 47 || exerciseId === 48 || exerciseId === 49 || exerciseId === 50) {
+    return CLASSIC_DIMINISHED2_WHITE_INDICES
+  }
   if (
     exerciseId === 42 ||
     exerciseId === 44 ||
@@ -88,7 +99,12 @@ export function classicAllowedWhiteIndices(exerciseId) {
 }
 
 export function classicAllowedBlackIndices(exerciseId) {
-  if (exerciseId === 47) return CLASSIC_EX47_ALLOWED_BLACK_INDICES
+  if (exerciseId === 51 || exerciseId === 52 || exerciseId === 53 || exerciseId === 54) {
+    return CLASSIC_EX51_ALLOWED_BLACK_INDICES
+  }
+  if (exerciseId === 47 || exerciseId === 48 || exerciseId === 49 || exerciseId === 50) {
+    return CLASSIC_EX47_ALLOWED_BLACK_INDICES
+  }
   if (exerciseId === 40 || exerciseId === 43) {
     return CLASSIC_EX40_EX41_ALLOWED_BLACK_INDICES
   }
@@ -163,7 +179,14 @@ const CLASSIC_INSTRUCTION_ROWS = [
   ['Acorde diminuto 1: D, F, G#-Ab, B - 2 notas (MA)', 'duas notas diminuto 1 (D, F, G#-Ab, B) (MA)'],
   ['Acorde diminuto 1: D, F, G#-Ab, B - 2 notas (MD)', 'duas notas diminuto 1 (D, F, G#-Ab, B) (MD)'],
   ['Acorde diminuto 1: D, F, G#-Ab, B - 2 notas (H)', 'duas notas diminuto 1 (D, F, G#-Ab, B) (harmonico)'],
-  ['Acorde diminuto 2: C, D#-Eb, F#-Gb, A - 1 nota', 'uma nota diminuto 2 (C, D#-Eb, F#-Gb, A)']
+  ['Acorde diminuto 2: C, D#-Eb, F#-Gb, A - 1 nota', 'uma nota diminuto 2 (C, D#-Eb, F#-Gb, A)'],
+  ['Acorde diminuto 2: C, D#-Eb, F#-Gb, A - 2 notas (MA)', 'duas notas diminuto 2 (C, D#-Eb, F#-Gb, A) (MA)'],
+  ['Acorde diminuto 2: C, D#-Eb, F#-Gb, A - 2 notas (MD)', 'duas notas diminuto 2 (C, D#-Eb, F#-Gb, A) (MD)'],
+  ['Acorde diminuto 2: C, D#-Eb, F#-Gb, A - 2 notas (H)', 'duas notas diminuto 2 (C, D#-Eb, F#-Gb, A) (harmonico)'],
+  ['Acorde diminuto 3: C#-Db, E, G, A#-Bb - 1 nota', 'uma nota diminuto 3 (C#-Db, E, G, A#-Bb)'],
+  ['Acorde diminuto 3: C#-Db, E, G, A#-Bb - 2 notas (MA)', 'duas notas diminuto 3 (C#-Db, E, G, A#-Bb) (MA)'],
+  ['Acorde diminuto 3: C#-Db, E, G, A#-Bb - 2 notas (MD)', 'duas notas diminuto 3 (C#-Db, E, G, A#-Bb) (MD)'],
+  ['Acorde diminuto 3: C#-Db, E, G, A#-Bb - 2 notas (H)', 'duas notas diminuto 3 (C#-Db, E, G, A#-Bb) (harmonico)'],
 ]
 
 export const CLASSIC_INSTRUCTION_BODY_BY_ID = Object.fromEntries(
@@ -179,11 +202,11 @@ const CLASSIC_ONE_NOTE_EXERCISE_IDS = new Set([
 ])
 
 const CLASSIC_HARMONIC_EXERCISE_IDS = new Set([
-  7, 11, 15, 19, 23, 27, 31, 35, 39, 43,
+  7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 50, 54,
 ])
 
 const CLASSIC_MA_EXERCISE_IDS = new Set([
-  5, 9, 13, 17, 21, 25, 29, 33, 37, 41,
+  5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 48, 52,
 ])
 
 export function getClassicReplayAriaLabel(exerciseId) {
@@ -200,5 +223,5 @@ export function getClassicReplayAriaLabel(exerciseId) {
 }
 
 export function classicBlackKeysEnabled(exerciseId) {
-  return exerciseId >= 24 && exerciseId <= 47
+  return exerciseId >= 24 && exerciseId <= 54
 }
