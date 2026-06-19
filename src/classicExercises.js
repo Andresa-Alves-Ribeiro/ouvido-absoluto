@@ -24,13 +24,11 @@ export function audioFileForIndex(index) {
   return `b${index}-${NOTE_BY_INDEX[index]}.mp3`
 }
 
-/** Extrai a letra da nota de `b{n}-{Nota}.mp3` — deve coincidir com o som desse ficheiro. */
 export function classicAudioFileNoteLabel(filename) {
   const m = /^b\d+-([A-G])\.mp3$/i.exec(filename)
   return m ? m[1].toUpperCase() : ''
 }
 
-/** Áudios 1–7: primeira oitava; 8–14: segunda oitava. */
 export function octaveBandLabelForAudioIndex(index) {
   if (index >= 1 && index <= 7) return 'primeira oitava'
   if (index >= 8 && index <= 14) return 'segunda oitava'
@@ -41,14 +39,12 @@ export const ALL_CLASSIC_EXERCISE_AUDIO_FILES = EXERCISE_AUDIO_INDICES_LOW.map(
   (n) => audioFileForIndex(n),
 ).concat(EXERCISE_AUDIO_INDICES_HIGH.map((n) => audioFileForIndex(n)))
 
-/** Ex. 5 — pares em ordem MA no teclado: C–D, C–E, D–E (índices das brancas C=0, D=1, E=2). */
 export const EXERCISE_5_VALID_PAIRS = [
   [0, 1],
   [0, 2],
   [1, 2],
 ]
 
-/** Ex. 9 — mesma lógica com F: C–D, C–E, C–F, D–E, D–F, E–F (C=0…F=3). */
 export const EXERCISE_9_VALID_PAIRS = [
   [0, 1],
   [0, 2],
@@ -58,7 +54,6 @@ export const EXERCISE_9_VALID_PAIRS = [
   [2, 3],
 ]
 
-/** Ex. 13 — mesma lógica com G: todos os pares entre C e G (C=0…G=4). */
 export const EXERCISE_13_VALID_PAIRS = [
   [0, 1],
   [0, 2],
@@ -72,7 +67,6 @@ export const EXERCISE_13_VALID_PAIRS = [
   [3, 4],
 ]
 
-/** Ex. 17 (MA) / Ex. 18–19 — mesma lógica com A: todos os pares entre C e A (C=0…A=5 nas brancas da escala maior). */
 export const EXERCISE_18_VALID_PAIRS = [
   [0, 1],
   [0, 2],
@@ -91,7 +85,6 @@ export const EXERCISE_18_VALID_PAIRS = [
   [4, 5],
 ]
 
-/** Ex. 21 (MA) / Ex. 22–23 / Ex. 25 (branco–branco) — mesma lógica com B: todos os pares entre C e B (C=0…B=6). */
 export const EXERCISE_22_VALID_PAIRS = [
   [0, 1],
   [0, 2],
@@ -128,7 +121,10 @@ export const EXERCISE_44_DIMINISHED_PAIRS = [
   [3, 6], // F–B
 ]
 
-/** Especificação de uma rodada do Ex. 25 (MA): branco–branco ou branco–G# segundo a altura real. */
+export const EXERCISE_48_DIMINISHED_PAIRS = [
+  [0, 5], // C–A
+]
+
 const EXERCISE_25_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -146,7 +142,6 @@ const EXERCISE_25_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-/** Ex. 29 (MA): branco–branco ou branco–F# / F#–branco (F# entre F e G nas brancas). */
 const EXERCISE_29_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -164,7 +159,6 @@ const EXERCISE_29_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-/** Ex. 33 (MA): branco–branco ou branco–D# / D#–branco (D# entre D e E nas brancas). */
 const EXERCISE_33_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -182,7 +176,6 @@ const EXERCISE_33_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-/** Ex. 37 (MA): branco–branco ou branco–C# / C#–branco com todas as brancas. */
 const EXERCISE_37_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -200,7 +193,6 @@ const EXERCISE_37_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-/** Ex. 43 (H): branco–branco ou branco–A# / A#–branco com todas as brancas (só no 43; o 41 MA usa G#/Ab como o 25). */
 const EXERCISE_43_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -218,8 +210,6 @@ const EXERCISE_43_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
     })),
   )
 
-// Pares com G#/Ab: D–G#, F–G#, G#–B
-// D(1) e F(3) são graves em relação a G#; G#(preta) é grave em relação a B(6)
 const EXERCISE_42_MA_SPECS = EXERCISE_42_DIMINISHED_PAIRS.map((pair) => ({
   type: 'ww',
   pair,
@@ -252,6 +242,495 @@ const EXERCISE_45_MD_SPECS = EXERCISE_44_DIMINISHED_PAIRS.map((pair) => ({
   .concat(
     [6].map((w) => ({ type: 'gw', w })),
   )
+
+const EXERCISE_48_MA_SPECS = EXERCISE_48_DIMINISHED_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat([{ type: 'wd', w: 0 }])
+  .concat([{ type: 'wf', w: 0 }])
+  .concat([{ type: 'da', w: 5 }])
+  .concat([{ type: 'fa', w: 5 }])
+
+export const EXERCISE_52_DIMINISHED_PAIRS = [
+  [2, 4], // E–G
+]
+
+const EXERCISE_52_MA_SPECS = EXERCISE_52_DIMINISHED_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat([{ type: 'ce', w: 2 }])
+  .concat([{ type: 'cg', w: 4 }])
+  .concat([{ type: 'wa', w: 2 }])
+  .concat([{ type: 'wa', w: 4 }])
+
+export const EXERCISE_56_DIMINISHED_PAIRS = [
+  [0, 1], // C–D
+  [0, 3], // C–F
+  [0, 5], // C–A
+  [0, 6], // C–B
+  [1, 3], // D–F
+  [1, 5], // D–A
+  [1, 6], // D–B
+  [3, 5], // F–A
+  [3, 6], // F–B
+  [5, 6], // A–B
+]
+
+const EXERCISE_56_MA_SPECS = EXERCISE_56_DIMINISHED_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat([0, 1, 3].map((w) => ({ type: 'wg', w })))
+  .concat([0, 1].map((w) => ({ type: 'wd', w })))
+  .concat([0, 1, 3].map((w) => ({ type: 'wf', w })))
+  .concat([5, 6].map((w) => ({ type: 'gw', w })))
+  .concat([3, 5, 6].map((w) => ({ type: 'da', w })))
+  .concat([5, 6].map((w) => ({ type: 'fa', w })))
+
+export const EXERCISE_60_DIMINISHED_PAIRS = [
+  [1, 2], // D–E
+  [1, 3], // D–F
+  [1, 4], // D–G
+  [1, 6], // D–B
+  [2, 3], // E–F
+  [2, 4], // E–G
+  [2, 6], // E–B
+  [3, 4], // F–G
+  [3, 6], // F–B
+  [4, 6], // G–B
+]
+
+const EXERCISE_60_MA_SPECS = EXERCISE_60_DIMINISHED_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat([1, 2, 3].map((w) => ({ type: 'wg', w })))
+  .concat([6].map((w) => ({ type: 'gw', w })))
+  .concat([1, 2, 3, 4, 6].map((w) => ({ type: 'ce', w })))
+  .concat([1, 2, 3, 4].map((w) => ({ type: 'wa', w })))
+
+export const EXERCISE_64_DIMINISHED_PAIRS = [
+  [0, 2], // C–E
+  [0, 4], // C–G
+  [0, 5], // C–A
+  [2, 4], // E–G
+  [2, 5], // E–A
+  [4, 5], // G–A
+]
+
+const EXERCISE_64_MA_SPECS = EXERCISE_64_DIMINISHED_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat([0].map((w) => ({ type: 'wc', w })))
+  .concat([0].map((w) => ({ type: 'wd', w })))
+  .concat([0, 2].map((w) => ({ type: 'wf', w })))
+  .concat([2, 4, 5].map((w) => ({ type: 'da', w })))
+  .concat([4, 5].map((w) => ({ type: 'fa', w })))
+  .concat([2, 4, 5].map((w) => ({ type: 'ce', w })))
+  .concat([2, 4, 5].map((w) => ({ type: 'wa', w })))
+
+export function exercise64PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_64_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const csharpFile = CLASSIC_ONE_NOTE_EX36_BLACK.audioFile
+  const dsharpFile = CLASSIC_ONE_NOTE_EX32_BLACK.audioFile
+  const fsharpFile = CLASSIC_ONE_NOTE_EX28_BLACK.audioFile
+  const asharpFile = CLASSIC_ONE_NOTE_EX40_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wc') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: csharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'csharp' },
+    }
+  }
+  if (spec.type === 'wd') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: dsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'dsharp' },
+    }
+  }
+  if (spec.type === 'wf') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: fsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'fsharp' },
+    }
+  }
+  if (spec.type === 'da') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: dsharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'dsharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  if (spec.type === 'fa') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: fsharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'fsharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  if (spec.type === 'ce' || spec.type === 'cg') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: csharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'csharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+  return {
+    audioFileLow: audioFileForIndex(iWhite),
+    audioFileHigh: asharpFile,
+    slot0: { kind: 'white', index: w },
+    slot1: { kind: 'asharp' },
+  }
+}
+
+const EXERCISE_68_MA_SPECS = EXERCISE_22_VALID_PAIRS.map((pair) => ({
+  type: 'ww',
+  pair,
+}))
+  .concat([0, 1, 2, 3, 4].map((w) => ({ type: 'wg', w })))
+  .concat([5, 6].map((w) => ({ type: 'gw', w })))
+  .concat([0, 1, 2, 3].map((w) => ({ type: 'wf', w })))
+  .concat([4, 5, 6].map((w) => ({ type: 'fw', w })))
+  .concat([0, 1].map((w) => ({ type: 'wd', w })))
+  .concat([2, 3, 4, 5, 6].map((w) => ({ type: 'dw', w })))
+  .concat([0].map((w) => ({ type: 'wc', w })))
+  .concat([1, 2, 3, 4, 5, 6].map((w) => ({ type: 'cw', w })))
+  .concat([0, 1, 2, 3, 4, 5].map((w) => ({ type: 'wa', w })))
+  .concat([6].map((w) => ({ type: 'aw', w })))
+
+export function exercise68PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_68_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const gsharpFile = CLASSIC_ONE_NOTE_EX24_BLACK.audioFile
+  const dsharpFile = CLASSIC_ONE_NOTE_EX32_BLACK.audioFile
+  const fsharpFile = CLASSIC_ONE_NOTE_EX28_BLACK.audioFile
+  const csharpFile = CLASSIC_ONE_NOTE_EX36_BLACK.audioFile
+  const asharpFile = CLASSIC_ONE_NOTE_EX40_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wg') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: gsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'gsharp' },
+    }
+  }
+  if (spec.type === 'gw') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: gsharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'gsharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  if (spec.type === 'wf') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: fsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'fsharp' },
+    }
+  }
+  if (spec.type === 'fw') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: fsharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'fsharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  if (spec.type === 'wd') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: dsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'dsharp' },
+    }
+  }
+  if (spec.type === 'dw') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: dsharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'dsharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  if (spec.type === 'wc') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: csharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'csharp' },
+    }
+  }
+  if (spec.type === 'cw') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: csharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'csharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  if (spec.type === 'wa') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: asharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'asharp' },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+  return {
+    audioFileLow: asharpFile,
+    audioFileHigh: audioFileForIndex(iWhite),
+    slot0: { kind: 'asharp' },
+    slot1: { kind: 'white', index: w },
+  }
+}
+
+export function exercise70PickRound(opts) {
+  return exercise68PickRound(opts)
+}
+
+export function exercise69PickRound(opts) {
+  return exercise68PickRound(opts)
+}
+
+export function exercise66PickRound(opts) {
+  return exercise64PickRound(opts)
+}
+
+export function exercise65PickRound(opts) {
+  return exercise64PickRound(opts)
+}
+
+export function exercise62PickRound(opts) {
+  return exercise60PickRound(opts)
+}
+
+export function exercise61PickRound(opts) {
+  return exercise60PickRound(opts)
+}
+
+export function exercise60PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_60_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const gsharpFile = CLASSIC_ONE_NOTE_EX24_BLACK.audioFile
+  const csharpFile = CLASSIC_ONE_NOTE_EX36_BLACK.audioFile
+  const asharpFile = CLASSIC_ONE_NOTE_EX40_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wg') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: gsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'gsharp' },
+    }
+  }
+  if (spec.type === 'gw') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: gsharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'gsharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  if (spec.type === 'ce') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: csharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'csharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+  return {
+    audioFileLow: audioFileForIndex(iWhite),
+    audioFileHigh: asharpFile,
+    slot0: { kind: 'white', index: w },
+    slot1: { kind: 'asharp' },
+  }
+}
+
+export function exercise58PickRound(opts) {
+  return exercise56PickRound(opts)
+}
+
+export function exercise57PickRound(opts) {
+  return exercise56PickRound(opts)
+}
+
+export function exercise56PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_56_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const gsharpFile = CLASSIC_ONE_NOTE_EX24_BLACK.audioFile
+  const dsharpFile = CLASSIC_ONE_NOTE_EX32_BLACK.audioFile
+  const fsharpFile = CLASSIC_ONE_NOTE_EX28_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wg') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: gsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'gsharp' },
+    }
+  }
+  if (spec.type === 'wd') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: dsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'dsharp' },
+    }
+  }
+  if (spec.type === 'wf') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: fsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'fsharp' },
+    }
+  }
+  if (spec.type === 'gw') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: gsharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'gsharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  if (spec.type === 'da') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: dsharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'dsharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+  return {
+    audioFileLow: fsharpFile,
+    audioFileHigh: audioFileForIndex(iWhite),
+    slot0: { kind: 'fsharp' },
+    slot1: { kind: 'white', index: w },
+  }
+}
 
 export function exercise45PickRound({ streak }) {
   const spec = pickByVerificationTarget(
@@ -326,6 +805,120 @@ export function exercise44PickRound({ streak }) {
     audioFileHigh: audioFileForIndex(iWhite),
     slot0: { kind: 'gsharp' },
     slot1: { kind: 'white', index: w },
+  }
+}
+
+export function exercise48PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_48_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const dsharpFile = CLASSIC_ONE_NOTE_EX32_BLACK.audioFile
+  const fsharpFile = CLASSIC_ONE_NOTE_EX28_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'wd') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: dsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'dsharp' },
+    }
+  }
+  if (spec.type === 'wf') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+    return {
+      audioFileLow: audioFileForIndex(iWhite),
+      audioFileHigh: fsharpFile,
+      slot0: { kind: 'white', index: w },
+      slot1: { kind: 'fsharp' },
+    }
+  }
+  if (spec.type === 'da') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: dsharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'dsharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+  return {
+    audioFileLow: fsharpFile,
+    audioFileHigh: audioFileForIndex(iWhite),
+    slot0: { kind: 'fsharp' },
+    slot1: { kind: 'white', index: w },
+  }
+}
+
+export function exercise49PickRound(opts) {
+  return exercise48PickRound(opts)
+}
+
+export function exercise50PickRound(opts) {
+  return exercise48PickRound(opts)
+}
+
+export function exercise54PickRound(opts) {
+  return exercise52PickRound(opts)
+}
+
+export function exercise53PickRound(opts) {
+  return exercise52PickRound(opts)
+}
+
+export function exercise52PickRound({ streak }) {
+  const spec = pickByVerificationTarget(
+    EXERCISE_52_MA_SPECS,
+    (candidate) => candidate.type !== 'ww',
+    streak,
+  )
+  const csharpFile = CLASSIC_ONE_NOTE_EX36_BLACK.audioFile
+  const asharpFile = CLASSIC_ONE_NOTE_EX40_BLACK.audioFile
+  if (spec.type === 'ww') {
+    const [lowW, highW] = spec.pair
+    const iLow = exercise25WhiteAudioIndexForLowNote(lowW, streak)
+    const iHigh = exercise25WhiteAudioIndexForHighNote(highW, streak)
+    return {
+      audioFileLow: audioFileForIndex(iLow),
+      audioFileHigh: audioFileForIndex(iHigh),
+      slot0: { kind: 'white', index: lowW },
+      slot1: { kind: 'white', index: highW },
+    }
+  }
+  if (spec.type === 'ce' || spec.type === 'cg') {
+    const w = spec.w
+    const iWhite = exercise25WhiteAudioIndexForHighNote(w, streak)
+    return {
+      audioFileLow: csharpFile,
+      audioFileHigh: audioFileForIndex(iWhite),
+      slot0: { kind: 'csharp' },
+      slot1: { kind: 'white', index: w },
+    }
+  }
+  const w = spec.w
+  const iWhite = exercise25WhiteAudioIndexForLowNote(w, streak)
+  return {
+    audioFileLow: audioFileForIndex(iWhite),
+    audioFileHigh: asharpFile,
+    slot0: { kind: 'white', index: w },
+    slot1: { kind: 'asharp' },
   }
 }
 
@@ -702,51 +1295,50 @@ function pickOneNoteChoiceByTarget(choices, targetNote, streak) {
   )
 }
 
-/** Notas permitidas nos exercícios de uma só nota (áudio `b{n}-Nota.mp3`). */
 export const CLASSIC_ONE_NOTE_EX1_LABELS = ['C', 'D']
 export const CLASSIC_ONE_NOTE_EX4_LABELS = ['C', 'D', 'E']
 export const CLASSIC_ONE_NOTE_EX8_LABELS = ['C', 'D', 'E', 'F']
 export const CLASSIC_ONE_NOTE_EX12_LABELS = ['C', 'D', 'E', 'F', 'G']
 
-/** Ex. 16 — uma nota; mesmo critério de oitavas que o Ex. 12; notas do Ex. 13 com A acrescentado. */
 export const CLASSIC_ONE_NOTE_EX17_LABELS = ['C', 'D', 'E', 'F', 'G', 'A']
 
-/** Ex. 20 — uma nota; mesmo critério que o Ex. 16; notas do Ex. 16 com B acrescentado. */
 export const CLASSIC_ONE_NOTE_EX21_LABELS = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
 
-/** Ex. 42 (novo) — acorde diminuto 1: só D, F, G#/Ab, B; uma nota por rodada. */
 export const CLASSIC_ONE_NOTE_DIMINISHED1_WHITE_LABELS = ['D', 'F', 'B']
 
 export const CLASSIC_ONE_NOTE_EX42_LABELS = ['D', 'F', 'B']
 
 export const CLASSIC_ONE_NOTE_EX47_LABELS = ['C', 'A']
 
+export const CLASSIC_ONE_NOTE_EX63_LABELS = ['C', 'E', 'G', 'A']
 
-/** Ex. 24 — G#/Ab; alvo interno sempre «G#»; o mesmo som que a tecla preta G#/Ab. */
+export const CLASSIC_ONE_NOTE_EX59_LABELS = ['D', 'E', 'F', 'G', 'B']
+
+export const CLASSIC_ONE_NOTE_EX55_LABELS = ['C', 'D', 'F', 'A', 'B']
+
+export const CLASSIC_ONE_NOTE_EX51_LABELS = ['E', 'G']
+
+
 export const CLASSIC_ONE_NOTE_EX24_BLACK = {
   target: 'G#',
   audioFile: 'p4-Gsharp-Ab.mp3',
 }
 
-/** Ex. 28 — F#/Gb; alvo interno sempre «F#»; o mesmo som que a tecla preta F#/Gb. */
 export const CLASSIC_ONE_NOTE_EX28_BLACK = {
   target: 'F#',
   audioFile: 'p3-Fsharp-Gb.mp3',
 }
 
-/** Ex. 32 — D#/Eb; alvo interno sempre «D#»; o mesmo som que a tecla preta D#/Eb. */
 export const CLASSIC_ONE_NOTE_EX32_BLACK = {
   target: 'D#',
   audioFile: 'p2-Dsharp-Eb.mp3',
 }
 
-/** Ex. 36 — C#/Db; alvo interno sempre «C#»; o mesmo som que a tecla preta C#/Db. */
 export const CLASSIC_ONE_NOTE_EX36_BLACK = {
   target: 'C#',
   audioFile: 'p1-Csharp-Db.mp3',
 }
 
-/** Ex. 40 — A#/Bb; alvo interno sempre «A#»; o mesmo som que a tecla preta A#/Bb. */
 export const CLASSIC_ONE_NOTE_EX40_BLACK = {
   target: 'A#',
   audioFile: 'p5-Asharp-Bb.mp3',
@@ -882,6 +1474,108 @@ export function pickClassicOneNoteRoundEx47({ streak, half }) {
   return { target: picked.target, audioFile: picked.audioFile }
 }
 
+export function pickClassicOneNoteRoundEx67({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX21_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices
+    .concat([CLASSIC_ONE_NOTE_EX24_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX36_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX32_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX28_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX40_BLACK])
+  const picked = pickByVerificationTarget(
+    allChoices,
+    (choice) =>
+      choice.target === 'G#' ||
+      choice.target === 'C#' ||
+      choice.target === 'D#' ||
+      choice.target === 'F#' ||
+      choice.target === 'A#',
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+export function pickClassicOneNoteRoundEx63({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX63_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices
+    .concat([CLASSIC_ONE_NOTE_EX36_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX32_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX28_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX40_BLACK])
+  const picked = pickByVerificationTarget(
+    allChoices,
+    (choice) =>
+      choice.target === 'C#' ||
+      choice.target === 'D#' ||
+      choice.target === 'F#' ||
+      choice.target === 'A#',
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+export function pickClassicOneNoteRoundEx59({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX59_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices
+    .concat([CLASSIC_ONE_NOTE_EX24_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX36_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX40_BLACK])
+  const picked = pickByVerificationTarget(
+    allChoices,
+    (choice) =>
+      choice.target === 'G#' ||
+      choice.target === 'C#' ||
+      choice.target === 'A#',
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+export function pickClassicOneNoteRoundEx55({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX55_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices
+    .concat([CLASSIC_ONE_NOTE_EX24_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX32_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX28_BLACK])
+  const picked = pickByVerificationTarget(
+    allChoices,
+    (choice) =>
+      choice.target === 'G#' ||
+      choice.target === 'D#' ||
+      choice.target === 'F#',
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
+export function pickClassicOneNoteRoundEx51({ streak, half }) {
+  const whiteChoices = whiteChoicesForOneNoteRound(
+    CLASSIC_ONE_NOTE_EX51_LABELS,
+    { streak, half },
+  )
+  const allChoices = whiteChoices
+    .concat([CLASSIC_ONE_NOTE_EX36_BLACK])
+    .concat([CLASSIC_ONE_NOTE_EX40_BLACK])
+  const picked = pickOneNoteChoiceByTarget(
+    allChoices,
+    CLASSIC_ONE_NOTE_EX36_BLACK.target,
+    streak,
+  )
+  return { target: picked.target, audioFile: picked.audioFile }
+}
+
 /**
  * Ex. 5 — streak &lt; 10: alterna oitava inteira a cada rodada; streak ≥ 10: notas em oitavas cruzadas;
  * par aleatório em {C–D, C–E, D–E}; MA = primeiro o mais grave, depois o mais agudo.
@@ -944,7 +1638,6 @@ export function exercise46PickRound(opts) {
   return exercise44PickRound(opts)
 }
 
-/** Lógica de oitava partilhada pelos exercícios MA de brancas (grave → agudo). */
 function pickTwoMaRoundFromPairs(validPairs, targetIndex, { streak }) {
   const pair = pickByVerificationTarget(
     validPairs,

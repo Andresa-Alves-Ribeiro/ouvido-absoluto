@@ -388,6 +388,52 @@
   background: linear-gradient(180deg, #1a1a22 0%, #050508 100%);
 }
 
+.piano-black.is-feedback-correct {
+  background: linear-gradient(180deg, #2d6b3a 0%, #1b5e20 55%, #145218 100%);
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.35),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    0 0 0 2px rgba(76, 175, 80, 0.55);
+}
+
+.piano-black.is-feedback-correct:active {
+  background: linear-gradient(180deg, #256832 0%, #145218 100%);
+}
+
+.piano-black.is-feedback-reveal {
+  background: linear-gradient(180deg, #8b2e2e 0%, #6d1b1b 55%, #4a1010 100%);
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.35),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    0 0 0 2px rgba(198, 40, 40, 0.55);
+}
+
+.piano-black.is-feedback-reveal:active {
+  background: linear-gradient(180deg, #7a2828 0%, #4a1010 100%);
+}
+
+.piano-black-order {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  min-width: 1.2em;
+  height: 1.2em;
+  padding: 0 4px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--sans);
+  font-size: clamp(8px, 1.8vmin, 11px);
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 999px;
+  line-height: 1;
+}
+
 .piano-black:focus-visible {
   outline: 2px solid var(--accent);
   z-index: 2;
