@@ -1,6 +1,3 @@
-/**
- * Uma oitava: C–Si (brancas). Áudio opcional das brancas: public/assets/audios/{Nota} maior.mp3
- */
 const whiteSequence = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
 
 export const WHITE_KEYS = whiteSequence.map((label) => ({
@@ -8,10 +5,6 @@ export const WHITE_KEYS = whiteSequence.map((label) => ({
   audioFile: `${label} maior.mp3`,
 }))
 
-/**
- * Pretas dentro da mesma oitava; afterWhite = índice da branca imediatamente à esquerda da preta (0 = dó).
- * Os ficheiros usam «sharp» em vez de '#' no disco.
- */
 export const BLACK_KEYS = [
   { afterWhite: 0, sharp: 'C#', flat: 'Db', audioFile: 'p1-Csharp-Db.mp3' },
   { afterWhite: 1, sharp: 'D#', flat: 'Eb', audioFile: 'p2-Dsharp-Eb.mp3' },
